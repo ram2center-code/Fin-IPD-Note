@@ -1,7 +1,6 @@
-import React from 'react';
-import { X, Bell, User, ChevronRight, AlertCircle, Clock } from 'lucide-react';
+import { X, Bell, User, ChevronRight, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 
-const NotificationModal = ({ isOpen, onClose, dueRecords, onSelectRecord }) => {
+const NotificationModal = ({ isOpen, onClose, dueRecords, onSelectRecord, onAcknowledge }) => {
   if (!isOpen) return null;
 
   return (
@@ -55,7 +54,19 @@ const NotificationModal = ({ isOpen, onClose, dueRecords, onSelectRecord }) => {
                   </div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">HN: {record.hn} | ห้อง {record.room}</p>
                 </div>
-                <ChevronRight size={16} className="text-slate-300 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+                <div className="flex items-center gap-2">
+                   <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAcknowledge(record.id);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                    title="ทราบแล้ว (อัปเดตวันที่เป็นวันนี้)"
+                  >
+                    <CheckCircle2 size={20} />
+                  </button>
+                  <ChevronRight size={16} className="text-slate-300 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+                </div>
               </button>
             ))
           ) : (

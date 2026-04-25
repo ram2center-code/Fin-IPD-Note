@@ -105,9 +105,11 @@ const Login = ({ onSession }) => {
           
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-200 text-white flex items-center justify-center text-3xl font-black italic mx-auto mb-6">
-              F
-            </div>
+            <img 
+              src="/pwa-192x192.png" 
+              alt="Logo" 
+              className="w-16 h-16 rounded-2xl shadow-xl shadow-indigo-100 mx-auto mb-6 object-cover bg-white p-1" 
+            />
             <h2 className="text-3xl font-black text-slate-800 leading-tight">
               {isForceReset ? 'ตั้งรหัสผ่านใหม่' : isRegister ? 'สร้างบัญชีใหม่' : 'ยินดีต้อนรับ'}
             </h2>

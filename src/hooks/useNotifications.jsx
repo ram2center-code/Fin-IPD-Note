@@ -43,6 +43,7 @@ export const useNotifications = (records, isMuted, setSelectedDueRecord, setShow
     today.setHours(0, 0, 0, 0);
 
     const due = records.filter(r => {
+      if (r.isAcknowledged) return false;
       if (r.recordType !== 'แจ้งยอดทุก 3 วัน') return false;
       const checkDate = new Date(r.checkDate);
       checkDate.setHours(0, 0, 0, 0);

@@ -1,4 +1,4 @@
-import { ClipboardList, ListTodo, LogOut, User as UserIcon, Users, Bell, Volume2, VolumeX } from 'lucide-react';
+import { ClipboardList, ListTodo, LogOut, User as UserIcon, Users, Bell, Volume2, VolumeX, BarChart3 } from 'lucide-react';
 
 const Navbar = ({ activeTab, setActiveTab, user, userRole, dueCount, onLogout, isMuted, setIsMuted, onOpenNotifications }) => {
   const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
@@ -8,9 +8,11 @@ const Navbar = ({ activeTab, setActiveTab, user, userRole, dueCount, onLogout, i
       <div className="max-w-[1200px] mx-auto px-6 flex justify-between items-center">
         {/* Logo Section ... (remains unchanged) */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-200 text-white flex items-center justify-center text-xl font-black italic shrink-0">
-            F
-          </div>
+          <img 
+            src="/pwa-192x192.png" 
+            alt="Logo" 
+            className="w-10 h-10 rounded-xl shadow-lg shadow-indigo-100 shrink-0 object-cover bg-white p-0.5" 
+          />
           <div className="hidden sm:block">
             <h1 className="text-sm font-extrabold text-slate-800 leading-tight">Fin IPD Note</h1>
             <p className="text-[9px] font-black text-slate-400 tracking-widest uppercase">Clinical Dashboard</p>
@@ -28,7 +30,19 @@ const Navbar = ({ activeTab, setActiveTab, user, userRole, dueCount, onLogout, i
             onClick={() => setActiveTab('dashboard')}
           >
             <ClipboardList size={18} />
-            <span className="hidden xs:block">หน้าหลัก (Dashboard)</span>
+            <span className="hidden xs:block">Dashboard</span>
+          </button>
+
+          <button 
+            className={`flex items-center gap-2 px-3 md:px-5 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 ${
+              activeTab === 'analytics' 
+                ? 'bg-white text-indigo-600 shadow-sm shadow-slate-200' 
+                : 'text-slate-500 hover:text-indigo-600'
+            }`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            <BarChart3 size={18} />
+            <span className="hidden xs:block">Analytics</span>
           </button>
 
           {userRole === 'admin' && (

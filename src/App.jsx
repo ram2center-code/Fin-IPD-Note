@@ -5,6 +5,7 @@ import UserManagement from './components/UserManagement'
 import DueDetailModal from './components/DueDetailModal'
 import NotificationModal from './components/NotificationModal'
 import Dashboard from './pages/Dashboard'
+import Analytics from './pages/Analytics'
 import { supabase } from './supabaseClient'
 import { mapDBToState } from './utils/formatters'
 import { useNotifications } from './hooks/useNotifications'
@@ -78,6 +79,18 @@ function App() {
     setActiveTab('dashboard')
   }
 
+  const handleAcknowledge = async (recordId) => {
+    const { data, error } = await supabase
+      .from('ipd_records')
+      .update({ is_acknowledged: true })
+      .eq('id', recordId)
+      .select();
+
+    if (!error && data) {
+      setRecords(records.map(r => r.id === recordId ? mapDBToState(data[0]) : r));
+    }
+  }
+
   if (!session) return <Login onSession={setSession} />
 
   return (
@@ -106,6 +119,8 @@ function App() {
             setShowDueDetailModal={setShowDueDetailModal}
             session={session}
           />
+        ) : activeTab === 'analytics' ? (
+          <Analytics records={records} />
         ) : activeTab === 'users' && userRole === 'admin' ? (
           <UserManagement />
         ) : null}
@@ -141,6 +156,7 @@ function App() {
           setSelectedDueRecord(record);
           setShowDueDetailModal(true);
         }}
+        onAcknowledge={handleAcknowledge}
       />
 
       <footer className="footer no-print text-center py-10 opacity-50 text-xs">

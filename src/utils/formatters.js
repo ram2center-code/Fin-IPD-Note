@@ -17,7 +17,8 @@ export const mapDBToState = (r) => ({
   balance: r.balance,
   notifyCount: r.notify_count,
   note: r.note,
-  recordedBy: r.recorded_by
+  recordedBy: r.recorded_by,
+  isAcknowledged: r.is_acknowledged || false
 });
 
 export const mapStateToDB = (formData, session) => ({
@@ -34,5 +35,6 @@ export const mapStateToDB = (formData, session) => ({
   balance: parseFloat(formData.balance) || 0,
   notify_count: formData.notifyCount,
   note: formData.note,
-  recorded_by: formData.recordedBy || session?.user?.user_metadata?.display_name || session?.user?.email?.split('@')[0] || 'User'
+  recorded_by: formData.recordedBy || session?.user?.user_metadata?.display_name || session?.user?.email?.split('@')[0] || 'User',
+  is_acknowledged: formData.isAcknowledged || false
 });

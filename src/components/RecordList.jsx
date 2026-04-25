@@ -8,11 +8,11 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
   const [filterDate, setFilterDate] = useState('');
 
   const filteredRecords = records.filter(record => {
-    const matchesSearch = 
+    const matchesSearch =
       record.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.hn.includes(searchTerm) ||
       record.paymentType.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesPayment = filterPayment === 'all' || record.paymentType === filterPayment;
     const matchesType = filterType === 'all' || record.recordType === filterType;
     const matchesDate = !filterDate || record.checkDate === filterDate;
@@ -54,7 +54,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
               Total: {records.length} patients | Showing: {filteredRecords.length}
             </p>
           </div>
-          <button 
+          <button
             onClick={resetFilters}
             className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-black text-[10px] uppercase tracking-widest transition-colors"
           >
@@ -66,8 +66,8 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
           {/* Main Search */}
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="ค้นหาชื่อ, HN..."
               className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 outline-none transition-all font-bold text-slate-600 shadow-inner"
               value={searchTerm}
@@ -78,8 +78,8 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
           {/* Date Filter */}
           <div className="relative group">
             <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
-            <input 
-              type="date" 
+            <input
+              type="date"
               className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-indigo-600 outline-none transition-all font-bold text-slate-600 tabular-nums cursor-pointer"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
@@ -89,7 +89,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
           {/* Payment Filter */}
           <div className="relative">
             <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <select 
+            <select
               className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-indigo-600 outline-none transition-all font-bold text-slate-600 appearance-none cursor-pointer"
               value={filterPayment}
               onChange={(e) => setFilterPayment(e.target.value)}
@@ -104,7 +104,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
           {/* Type Filter */}
           <div className="relative">
             <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <select 
+            <select
               className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-indigo-600 outline-none transition-all font-bold text-slate-600 appearance-none cursor-pointer"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
@@ -121,15 +121,15 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
         sortedDates.map((date) => (
           <div key={date} className="mb-12">
             <div className="flex items-center gap-4 mb-6 ml-4">
-               <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
-                  <Calendar size={20} />
-               </div>
-               <div>
-                  <h3 className="font-black text-slate-800 text-lg leading-tight">{formatDateThai(date)}</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">
-                    {groupedRecords[date].length} PATIENTS ON THIS DAY
-                  </p>
-               </div>
+              <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
+                <Calendar size={20} />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-800 text-lg leading-tight">{formatDateThai(date)}</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">
+                  {groupedRecords[date].length} PATIENTS ON THIS DAY
+                </p>
+              </div>
             </div>
 
             {/* Desktop Table */}
@@ -154,7 +154,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                   {groupedRecords[date].map((record, index) => (
                     <tr key={record.id} className="hover:bg-indigo-50/30 transition-colors group">
                       <td className="px-5 py-6 text-center pl-10">
-                        <button 
+                        <button
                           onClick={() => handleEdit(record)}
                           className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-indigo-600 hover:bg-white rounded-xl shadow-sm hover:shadow-md transition-all active:scale-90 mx-auto"
                         >
@@ -162,9 +162,9 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                         </button>
                       </td>
                       <td className="px-4 py-6 text-center">
-                         <span className="text-[10px] font-black text-slate-300 tabular-nums">
-                            {(index + 1).toString().padStart(2, '0')}
-                         </span>
+                        <span className="text-[10px] font-black text-slate-300 tabular-nums">
+                          {(index + 1).toString().padStart(2, '0')}
+                        </span>
                       </td>
                       <td className="px-5 py-6">
                         <span className="text-[11px] font-black text-slate-400 tabular-nums bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 group-hover:bg-white transition-all whitespace-nowrap">
@@ -174,30 +174,28 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                       <td className="px-5 py-6">
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
-                             {dueRecords?.some(dr => dr.id === record.id) && (
-                               <Bell 
-                                  size={14} 
-                                  className="text-red-500 animate-bounce shrink-0 cursor-pointer hover:text-red-600" 
-                                  title="คลิกเพื่อดูรายละเอียดการแจ้งเตือน"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onOpenDetail(record);
-                                  }}
-                                />
-                             )}
-                             <p className="font-black text-slate-800 text-sm group-hover:text-indigo-600 transition-colors">
-                               {record.fullName} <span className="text-slate-400 font-bold ml-1 text-xs">({record.age})</span>
-                             </p>
+                            {dueRecords?.some(dr => dr.id === record.id) && (
+                              <Bell
+                                size={14}
+                                className="text-red-500 animate-bounce shrink-0 cursor-pointer hover:text-red-600"
+                                title="คลิกเพื่อดูรายละเอียดการแจ้งเตือน"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenDetail(record);
+                                }}
+                              />
+                            )}
+                            <p className="font-black text-slate-800 text-sm group-hover:text-indigo-600 transition-colors">
+                              {record.fullName} <span className="text-slate-400 font-bold ml-1 text-xs">({record.age})</span>
+                            </p>
                           </div>
                           <div className="flex gap-2 mt-1.5">
-                            <span className={`text-[8px] font-black px-1.5 py-0.2 rounded-md uppercase ${
-                              record.paymentType === 'ชำระเอง' ? 'bg-blue-50 text-blue-600' : 'bg-stone-50 text-stone-600'
-                            }`}>
+                            <span className={`text-[8px] font-black px-1.5 py-0.2 rounded-md uppercase ${record.paymentType === 'ชำระเอง' ? 'bg-blue-50 text-blue-600' : 'bg-stone-50 text-stone-600'
+                              }`}>
                               {record.paymentType}
                             </span>
-                            <span className={`text-[8px] font-black px-1.5 py-0.2 rounded-md uppercase ${
-                              record.recordType === 'หลังทำหัตถการ' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'
-                            }`}>
+                            <span className={`text-[8px] font-black px-1.5 py-0.2 rounded-md uppercase ${record.recordType === 'หลังทำหัตถการ' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'
+                              }`}>
                               {record.recordType}
                             </span>
                           </div>
@@ -205,13 +203,13 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                       </td>
                       <td className="px-5 py-6 text-center font-black text-slate-700 tabular-nums">{record.room}</td>
                       <td className="px-5 py-6 text-center text-xs font-bold text-slate-500 tabular-nums">{record.stayDays}</td>
-                      <td className="px-5 py-6 text-right font-bold text-slate-400 text-xs tabular-nums">{Number(record.totalAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                      <td className="px-5 py-6 text-right font-bold text-slate-400 text-xs tabular-nums">{Number(record.deposit).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                      <td className="px-5 py-6 text-right font-black text-indigo-600 text-[16px] tabular-nums whitespace-nowrap pr-10">{Number(record.balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                      <td className="px-5 py-6 text-right font-bold text-slate-400 text-xs tabular-nums">{Number(record.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="px-5 py-6 text-right font-bold text-slate-400 text-xs tabular-nums">{Number(record.deposit).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="px-5 py-6 text-right font-black text-indigo-600 text-[16px] tabular-nums whitespace-nowrap pr-10">{Number(record.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td className="px-5 py-6 text-center">
-                         <span className="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-600 rounded-full text-[10px] font-black mx-auto">
-                            {record.notifyCount || '-'}
-                         </span>
+                        <span className="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-600 rounded-full text-[10px] font-black mx-auto">
+                          {record.notifyCount || '-'}
+                        </span>
                       </td>
                       <td className="px-5 py-6">
                         <p className="text-[11px] font-bold text-slate-400 line-clamp-2 italic leading-relaxed">
@@ -219,11 +217,12 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                         </p>
                         {record.recordedBy && (
                           <div className="flex items-center gap-1.5 mt-2 opacity-60">
-                             <User size={10} className="text-slate-400" />
-                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">โดย: {record.recordedBy}</span>
+                            <User size={10} className="text-slate-400" />
+                            <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">โดย: {record.recordedBy}</span>
                           </div>
                         )}
                       </td>
+
                     </tr>
                   ))}
                 </tbody>
@@ -241,49 +240,49 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                     </div>
                     <button onClick={() => handleEdit(record)} className="text-indigo-600 bg-indigo-50 p-2 rounded-xl"><Edit2 size={18} /></button>
                   </div>
-                  
+
                   <div className="flex gap-4 mb-4">
-                     <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                           {dueRecords?.some(dr => dr.id === record.id) && (
-                              <Bell 
-                                size={18} 
-                                className="text-red-500 animate-bounce shrink-0 cursor-pointer" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onOpenDetail(record);
-                                }}
-                              />
-                           )}
-                          <h3 className="font-black text-slate-800 text-lg leading-tight">{record.fullName}</h3>
-                        </div>
-                        <p className="text-xs font-bold text-slate-400 mt-0.5">อายุ {record.age} ปี | พัก {record.stayDays} วัน</p>
-                     </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        {dueRecords?.some(dr => dr.id === record.id) && (
+                          <Bell
+                            size={18}
+                            className="text-red-500 animate-bounce shrink-0 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenDetail(record);
+                            }}
+                          />
+                        )}
+                        <h3 className="font-black text-slate-800 text-lg leading-tight">{record.fullName}</h3>
+                      </div>
+                      <p className="text-xs font-bold text-slate-400 mt-0.5">อายุ {record.age} ปี | พัก {record.stayDays} วัน</p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 mb-5">
-                     <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">ยอดรวม</p>
-                        <p className="text-sm font-black text-slate-600">{Number(record.totalAmount).toLocaleString()}</p>
-                     </div>
-                     <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">มัดจำแล้ว</p>
-                        <p className="text-sm font-black text-slate-600">{Number(record.deposit).toLocaleString()}</p>
-                     </div>
+                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                      <p className="text-[8px] font-black text-slate-400 uppercase mb-1">ยอดรวม</p>
+                      <p className="text-sm font-black text-slate-600">{Number(record.totalAmount).toLocaleString()}</p>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                      <p className="text-[8px] font-black text-slate-400 uppercase mb-1">มัดจำแล้ว</p>
+                      <p className="text-sm font-black text-slate-600">{Number(record.deposit).toLocaleString()}</p>
+                    </div>
                   </div>
 
                   {record.note && (
                     <div className="mb-5 flex flex-col gap-2 bg-indigo-50/50 p-3 rounded-2xl">
-                       <div className="flex items-start gap-2">
-                          <MessageSquare size={14} className="text-indigo-400 mt-0.5" />
-                          <p className="text-[10px] italic font-bold text-indigo-600/70">{record.note}</p>
-                       </div>
-                       {record.recordedBy && (
-                          <div className="flex items-center gap-1.5 mt-1 pt-2 border-t border-indigo-100/50">
-                             <User size={10} className="text-indigo-400" />
-                             <span className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest">บันทึกโดย: {record.recordedBy}</span>
-                          </div>
-                       )}
+                      <div className="flex items-start gap-2">
+                        <MessageSquare size={14} className="text-indigo-400 mt-0.5" />
+                        <p className="text-[10px] italic font-bold text-indigo-600/70">{record.note}</p>
+                      </div>
+                      {record.recordedBy && (
+                        <div className="flex items-center gap-1.5 mt-1 pt-2 border-t border-indigo-100/50">
+                          <User size={10} className="text-indigo-400" />
+                          <span className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest">บันทึกโดย: {record.recordedBy}</span>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -293,7 +292,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                         <p className="text-[9px] font-black text-indigo-200 uppercase tracking-widest">ยอดคงเหลือ</p>
                         <span className="bg-white/20 text-white text-[8px] px-1.5 py-0.5 rounded-md font-black italic">ครั้งที่ {record.notifyCount || 1}</span>
                       </div>
-                      <p className="text-2xl font-black tabular-nums">{Number(record.balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                      <p className="text-2xl font-black tabular-nums">{Number(record.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                     </div>
                     <ChevronRight size={20} className="opacity-50" />
                   </div>
@@ -304,8 +303,8 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
         ))
       ) : (
         <div className="py-20 text-center bg-white rounded-[40px] border border-dashed border-slate-200">
-           <p className="text-slate-400 font-bold uppercase tracking-widest italic">ไม่พบข้อมูลที่ตรงกับตัวกรอง</p>
-           <button onClick={resetFilters} className="mt-4 text-indigo-600 font-black text-xs uppercase tracking-widest">ล้างตัวกรองเพื่อดูข้อมูลทั้งหมด</button>
+          <p className="text-slate-400 font-bold uppercase tracking-widest italic">ไม่พบข้อมูลที่ตรงกับตัวกรอง</p>
+          <button onClick={resetFilters} className="mt-4 text-indigo-600 font-black text-xs uppercase tracking-widest">ล้างตัวกรองเพื่อดูข้อมูลทั้งหมด</button>
         </div>
       )}
     </div>

@@ -23,10 +23,11 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
     deposit: '',
     balance: 0,
     notifyCount: '',
-    paymentType: '-',
+    paymentType: '',
     recordType: 'หลังทำหัตถการ',
     note: '',
-    recordedBy: session?.user?.user_metadata?.display_name || session?.user?.email?.split('@')[0] || 'User'
+    recordedBy: '',
+    isAcknowledged: false
   });
 
   // Calculate balance automatically
@@ -40,9 +41,10 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
     setFormData({
       fullName: '', age: '', hn: '', room: '', stayDays: '',
       totalAmount: '', deposit: '', balance: 0, notifyCount: '',
-      paymentType: '-', checkDate: new Date().toISOString().split('T')[0],
+      paymentType: '', checkDate: new Date().toISOString().split('T')[0],
       recordType: 'หลังทำหัตถการ', note: '',
-      recordedBy: session?.user?.user_metadata?.display_name || session?.user?.email?.split('@')[0] || 'User'
+      recordedBy: '',
+      isAcknowledged: false
     });
     setEditingId(null);
     setSearchResult(null);
@@ -119,7 +121,12 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = mapStateToDB(formData, session);
+    const submissionData = {
+      ...formData,
+      isAcknowledged: false // Always reset on save
+    };
+
+    const payload = mapStateToDB(submissionData, session);
 
     try {
       if (editingId) {
@@ -145,7 +152,10 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
       <div className="flex justify-center mb-8">
         <div className="flex gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/50">
           <button 
-            onClick={() => setActiveTab('form')}
+            onClick={() => {
+              handleResetForm();
+              setActiveTab('form');
+            }}
             className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'form' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}
           >
             ฟอร์มบันทึก
