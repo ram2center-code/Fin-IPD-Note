@@ -19,6 +19,11 @@ const Login = ({ onSession }) => {
     setError(null);
 
     try {
+      let finalEmail = email.trim();
+      if (finalEmail && !finalEmail.includes('@')) {
+        finalEmail = `${finalEmail}@ram2-hosp.com`;
+      }
+
       if (isForceReset) {
         // Handle forced password reset
         const { error: updateError } = await supabase.auth.updateUser({
@@ -40,7 +45,7 @@ const Login = ({ onSession }) => {
       } else if (isRegister) {
         // Register Logic
         const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
+          email: finalEmail,
           password,
           options: {
             data: {
@@ -54,7 +59,7 @@ const Login = ({ onSession }) => {
       } else {
         // Login Logic
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
+          email: finalEmail,
           password,
         });
         if (signInError) throw signInError;
@@ -162,13 +167,13 @@ const Login = ({ onSession }) => {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
-                      type="email" 
+                      type="text" 
                       required
-                      placeholder="name@example.com"
+                      placeholder="ใส่เฉพาะชื่อ หรือ Email"
                       className="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 focus:bg-white outline-none transition-all font-semibold text-slate-700"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}

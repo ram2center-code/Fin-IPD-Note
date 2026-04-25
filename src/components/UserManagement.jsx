@@ -104,11 +104,16 @@ const UserManagement = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     setChangeLoading(true);
+    let finalEmail = newUserData.email.trim();
+    if (finalEmail && !finalEmail.includes('@')) {
+      finalEmail = `${finalEmail}@ram2-hosp.com`;
+    }
+
     try {
       const { error } = await supabase.functions.invoke('admin-change-password', {
         body: { 
           action: 'create',
-          email: newUserData.email,
+          email: finalEmail,
           password: newUserData.password,
           display_name: newUserData.displayName,
           role: newUserData.role
@@ -280,7 +285,7 @@ const UserManagement = () => {
                   </div>
                   <form onSubmit={handleAddUser} className="space-y-4">
                       <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label><input type="text" required placeholder="ชื่อ-นามสกุล" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm" value={newUserData.displayName} onChange={(e) => setNewUserData({...newUserData, displayName: e.target.value})} /></div>
-                      <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label><input type="email" required placeholder="email@example.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm" value={newUserData.email} onChange={(e) => setNewUserData({...newUserData, email: e.target.value})} /></div>
+                      <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label><input type="text" required placeholder="เช่น john (ไม่ต้องใส่ @...)" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm" value={newUserData.email} onChange={(e) => setNewUserData({...newUserData, email: e.target.value})} /></div>
                       <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label><input type="password" required placeholder="รหัสผ่านเริ่มต้น" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm" value={newUserData.password} onChange={(e) => setNewUserData({...newUserData, password: e.target.value})} /></div>
                       <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Initial Role</label><select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm appearance-none" value={newUserData.role} onChange={(e) => setNewUserData({...newUserData, role: e.target.value})}><option value="staff">Staff (มาตรฐาน)</option><option value="admin">Administrator (แอดมิน)</option></select></div>
                       <div className="flex gap-3 pt-6"><button type="button" onClick={() => setIsAddingUser(false)} className="flex-1 py-4 text-slate-400 font-black text-xs uppercase">ยกเลิก</button><button type="submit" disabled={changeLoading} className="flex-2 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 text-xs uppercase flex items-center justify-center gap-2">{changeLoading ? <RefreshCcw size={18} className="animate-spin" /> : <ShieldCheck size={18} />}สร้างบัญชีผู้ใช้</button></div>

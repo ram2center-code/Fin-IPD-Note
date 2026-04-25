@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   User, Hash, BedDouble, Calendar, Banknote, 
   Wallet, Receipt, FileText, Search, UserPlus, 
-  ChevronRight, Save, X, RotateCcw, HelpCircle, ChevronDown
+  ChevronRight, Save, X, RotateCcw, HelpCircle, ChevronDown, UserCheck
 } from 'lucide-react';
 
 const PatientForm = ({ 
@@ -13,7 +13,8 @@ const PatientForm = ({
   searchResult, 
   editingId, 
   handleCancelEdit,
-  handleResetForm
+  handleResetForm,
+  user
 }) => {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const paymentRef = useRef(null);
@@ -73,7 +74,7 @@ const PatientForm = ({
                   value={formData.hn} onChange={handleInputChange} required
                 />
                 <button
-                  type="button" onClick={handleCheckHistory}
+                  type="button" onClick={() => handleCheckHistory(formData.hn)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 bg-white text-indigo-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:shadow-md transition-all border border-slate-100 active:scale-95"
                 >
                   <Search size={14} className="inline mr-1" /> เช็คประวัติ
@@ -100,7 +101,7 @@ const PatientForm = ({
             {/* Others */}
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Age (อายุ)</label>
-              <input type="number" name="age" placeholder="ปี" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700 tabular-nums" value={formData.age} onChange={handleInputChange} required />
+              <input type="number" name="age" placeholder="ปี" onWheel={(e) => e.target.blur()} className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700 tabular-nums" value={formData.age} onChange={handleInputChange} required />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Room Number (เลขห้อง)</label>
@@ -111,7 +112,7 @@ const PatientForm = ({
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Stay Duration (พักกี่คืน)</label>
-              <input type="number" name="stayDays" placeholder="จำนวนคืน" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700 tabular-nums" value={formData.stayDays} onChange={handleInputChange} required />
+              <input type="number" name="stayDays" placeholder="จำนวนคืน" onWheel={(e) => e.target.blur()} className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700 tabular-nums" value={formData.stayDays} onChange={handleInputChange} required />
             </div>
           </div>
         </div>
@@ -130,11 +131,11 @@ const PatientForm = ({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">ยอดรวมทั้งหมด</label>
-                  <input type="number" name="totalAmount" placeholder="0.00" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition-all font-black text-slate-700 text-lg tabular-nums" value={formData.totalAmount} onChange={handleInputChange} required />
+                  <input type="number" name="totalAmount" placeholder="0.00" onWheel={(e) => e.target.blur()} className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition-all font-black text-slate-700 text-lg tabular-nums" value={formData.totalAmount} onChange={handleInputChange} required />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Deposit</label>
-                  <input type="number" name="deposit" placeholder="0.00" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition-all font-black text-slate-700 text-lg tabular-nums" value={formData.deposit} onChange={handleInputChange} required />
+                  <input type="number" name="deposit" placeholder="0.00" onWheel={(e) => e.target.blur()} className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition-all font-black text-slate-700 text-lg tabular-nums" value={formData.deposit} onChange={handleInputChange} required />
                 </div>
               </div>
 
@@ -217,8 +218,26 @@ const PatientForm = ({
                 <input type="text" name="notifyCount" placeholder="เช่น 1, 2, 3..." className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-violet-600 outline-none transition-all font-bold text-slate-700" value={formData.notifyCount} onChange={handleInputChange} />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">หมายเหตุ</label>
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">หมายเหตุ</label>
+                </div>
                 <textarea name="note" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติมที่นี่..." className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-violet-600 outline-none transition-all font-bold text-slate-700 resize-none" value={formData.note} onChange={handleInputChange}></textarea>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">ชื่อผู้ลงข้อมูล (ผู้บันทึก)</label>
+                <div className="relative group">
+                  <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
+                  <input
+                    type="text" 
+                    name="recordedBy" 
+                    placeholder="ระบุชื่อผู้บันทึก"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-violet-600 focus:bg-white outline-none transition-all font-bold text-slate-700" 
+                    value={formData.recordedBy} 
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
               </div>
             </div>
           </div>

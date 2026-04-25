@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Search, Edit2, Calendar, User, CreditCard, ChevronRight, MessageSquare, Clock, Hash, Filter, RotateCcw } from 'lucide-react';
+import { Search, Edit2, Calendar, User, CreditCard, ChevronRight, MessageSquare, Clock, Hash, Filter, RotateCcw, Bell } from 'lucide-react';
 
-const RecordList = ({ records, handleEdit }) => {
+const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetail }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPayment, setFilterPayment] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [filterDate, setFilterDate] = useState('');
 
   const filteredRecords = records.filter(record => {
     const matchesSearch = 
@@ -14,8 +15,9 @@ const RecordList = ({ records, handleEdit }) => {
     
     const matchesPayment = filterPayment === 'all' || record.paymentType === filterPayment;
     const matchesType = filterType === 'all' || record.recordType === filterType;
+    const matchesDate = !filterDate || record.checkDate === filterDate;
 
-    return matchesSearch && matchesPayment && matchesType;
+    return matchesSearch && matchesPayment && matchesType && matchesDate;
   });
 
   const groupedRecords = filteredRecords.reduce((groups, record) => {
@@ -38,6 +40,7 @@ const RecordList = ({ records, handleEdit }) => {
     setSearchTerm('');
     setFilterPayment('all');
     setFilterType('all');
+    setFilterDate('');
   };
 
   return (
@@ -59,16 +62,27 @@ const RecordList = ({ records, handleEdit }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Main Search */}
-          <div className="md:col-span-2 relative group">
+          <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="ค้นหาชื่อ, HN, หรือประกัน..."
+              placeholder="ค้นหาชื่อ, HN..."
               className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 outline-none transition-all font-bold text-slate-600 shadow-inner"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* Date Filter */}
+          <div className="relative group">
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
+            <input 
+              type="date" 
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-indigo-600 outline-none transition-all font-bold text-slate-600 tabular-nums cursor-pointer"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
             />
           </div>
 
@@ -159,9 +173,22 @@ const RecordList = ({ records, handleEdit }) => {
                       </td>
                       <td className="px-5 py-6">
                         <div className="flex flex-col">
-                          <p className="font-black text-slate-800 text-sm group-hover:text-indigo-600 transition-colors">
-                            {record.fullName} <span className="text-slate-400 font-bold ml-1 text-xs">({record.age})</span>
-                          </p>
+                          <div className="flex items-center gap-2">
+                             {dueRecords?.some(dr => dr.id === record.id) && (
+                               <Bell 
+                                  size={14} 
+                                  className="text-red-500 animate-bounce shrink-0 cursor-pointer hover:text-red-600" 
+                                  title="คลิกเพื่อดูรายละเอียดการแจ้งเตือน"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenDetail(record);
+                                  }}
+                                />
+                             )}
+                             <p className="font-black text-slate-800 text-sm group-hover:text-indigo-600 transition-colors">
+                               {record.fullName} <span className="text-slate-400 font-bold ml-1 text-xs">({record.age})</span>
+                             </p>
+                          </div>
                           <div className="flex gap-2 mt-1.5">
                             <span className={`text-[8px] font-black px-1.5 py-0.2 rounded-md uppercase ${
                               record.paymentType === 'ชำระเอง' ? 'bg-blue-50 text-blue-600' : 'bg-stone-50 text-stone-600'
@@ -186,10 +213,16 @@ const RecordList = ({ records, handleEdit }) => {
                             {record.notifyCount || '-'}
                          </span>
                       </td>
-                      <td className="px-5 py-6 max-w-[200px]">
+                      <td className="px-5 py-6">
                         <p className="text-[11px] font-bold text-slate-400 line-clamp-2 italic leading-relaxed">
                           {record.note || '-'}
                         </p>
+                        {record.recordedBy && (
+                          <div className="flex items-center gap-1.5 mt-2 opacity-60">
+                             <User size={10} className="text-slate-400" />
+                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">โดย: {record.recordedBy}</span>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -211,7 +244,19 @@ const RecordList = ({ records, handleEdit }) => {
                   
                   <div className="flex gap-4 mb-4">
                      <div className="flex-1">
-                        <h3 className="font-black text-slate-800 text-lg leading-tight">{record.fullName}</h3>
+                        <div className="flex items-center gap-2">
+                           {dueRecords?.some(dr => dr.id === record.id) && (
+                              <Bell 
+                                size={18} 
+                                className="text-red-500 animate-bounce shrink-0 cursor-pointer" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenDetail(record);
+                                }}
+                              />
+                           )}
+                          <h3 className="font-black text-slate-800 text-lg leading-tight">{record.fullName}</h3>
+                        </div>
                         <p className="text-xs font-bold text-slate-400 mt-0.5">อายุ {record.age} ปี | พัก {record.stayDays} วัน</p>
                      </div>
                   </div>
@@ -228,9 +273,17 @@ const RecordList = ({ records, handleEdit }) => {
                   </div>
 
                   {record.note && (
-                    <div className="mb-5 flex items-start gap-2 bg-indigo-50/50 p-3 rounded-2xl">
-                       <MessageSquare size={14} className="text-indigo-400 mt-0.5" />
-                       <p className="text-[10px] italic font-bold text-indigo-600/70">{record.note}</p>
+                    <div className="mb-5 flex flex-col gap-2 bg-indigo-50/50 p-3 rounded-2xl">
+                       <div className="flex items-start gap-2">
+                          <MessageSquare size={14} className="text-indigo-400 mt-0.5" />
+                          <p className="text-[10px] italic font-bold text-indigo-600/70">{record.note}</p>
+                       </div>
+                       {record.recordedBy && (
+                          <div className="flex items-center gap-1.5 mt-1 pt-2 border-t border-indigo-100/50">
+                             <User size={10} className="text-indigo-400" />
+                             <span className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest">บันทึกโดย: {record.recordedBy}</span>
+                          </div>
+                       )}
                     </div>
                   )}
 
