@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Edit2, Calendar, User, CreditCard, ChevronRight, MessageSquare, Clock, Hash, Filter, RotateCcw, Bell, ChevronDown, ChevronUp, BedDouble, Plus, CheckCircle } from 'lucide-react';
+import { Search, Edit2, Calendar, User, CreditCard, ChevronRight, MessageSquare, Clock, Hash, Filter, RotateCcw, Bell, ChevronDown, ChevronUp, BedDouble, Plus, CheckCircle, Trash2, X } from 'lucide-react';
 
 const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetail, userRole, handleAdd, handleCloseHN, showClosedCases = false }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -7,6 +7,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
   const [filterType, setFilterType] = useState('all');
   const [filterDate, setFilterDate] = useState('');
   const [expandedHN, setExpandedHN] = useState(null);
+  const [viewNoteModal, setViewNoteModal] = useState({ isOpen: false, note: '', recordInfo: null });
 
   const filteredRecords = records.filter(record => {
     if (record.isClosed && !showClosedCases) return false;
@@ -234,6 +235,15 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                                         <Edit2 size={14} />
                                       </button>
                                     )}
+                                    {handleDelete && (
+                                      <button
+                                        onClick={() => handleDelete(record.id)}
+                                        className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-600 hover:bg-white rounded-lg shadow-sm hover:shadow-md transition-all active:scale-90"
+                                        title="ลบ"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    )}
                                   </div>
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap">
@@ -272,7 +282,17 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                                   </span>
                                 </td>
                                 <td className="px-4 py-4">
-                                  <p className="text-xs font-bold text-slate-500 line-clamp-1 italic">{record.note || '-'}</p>
+                                  {record.note ? (
+                                    <button 
+                                      onClick={() => setViewNoteModal({ isOpen: true, note: record.note, recordInfo: `${patientData.fullName} (HN: ${hn})` })}
+                                      className="text-xs font-bold text-slate-500 line-clamp-1 italic hover:text-indigo-600 hover:underline text-left"
+                                      title="คลิกเพื่ออ่านแบบเต็ม"
+                                    >
+                                      {record.note}
+                                    </button>
+                                  ) : (
+                                    <span className="text-xs font-bold text-slate-300">-</span>
+                                  )}
                                 </td>
                                 <td className="px-4 py-4 text-center">
                                   <p className="text-xs font-bold text-indigo-600 truncate">{record.recordedBy || '-'}</p>
@@ -304,9 +324,14 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                                   <p className="text-sm font-bold text-slate-500 mt-0.5">ห้อง {record.room} | ครั้งที่ {record.notifyCount || 1}</p>
                                 </div>
                               </div>
-                              {handleEdit && (
-                                <button onClick={() => handleEdit(record)} className="text-indigo-600 bg-white p-2 rounded-lg shadow-sm border border-slate-100"><Edit2 size={16} /></button>
-                              )}
+                              <div className="flex gap-2">
+                                {handleEdit && (
+                                  <button onClick={() => handleEdit(record)} className="text-indigo-600 bg-white p-2 rounded-lg shadow-sm border border-slate-100"><Edit2 size={16} /></button>
+                                )}
+                                {handleDelete && (
+                                  <button onClick={() => handleDelete(record.id)} className="text-red-500 bg-white p-2 rounded-lg shadow-sm border border-slate-100"><Trash2 size={16} /></button>
+                                )}
+                              </div>
                             </div>
                             <div className="bg-white p-3 rounded-xl border border-slate-100 mb-3">
                               <p className="text-[10px] font-black text-slate-500 uppercase mb-1">ประเภท / รูปแบบชำระ</p>
@@ -319,7 +344,12 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                             {record.note && (
                               <div className="flex items-start gap-2 bg-white/50 p-2 rounded-xl border border-slate-100">
                                 <MessageSquare size={14} className="text-slate-500 mt-0.5" />
-                                <p className="text-xs italic font-bold text-slate-500">{record.note}</p>
+                                <p 
+                                  className="text-xs italic font-bold text-slate-500 cursor-pointer hover:text-indigo-600 hover:underline line-clamp-2"
+                                  onClick={() => setViewNoteModal({ isOpen: true, note: record.note, recordInfo: `${patientData.fullName} (HN: ${hn})` })}
+                                >
+                                  {record.note}
+                                </p>
                               </div>
                             )}
                           </div>
@@ -341,6 +371,32 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
           </div>
         )}
       </div>
+
+      {/* Note Modal */}
+      {viewNoteModal.isOpen && (
+        <div className="fixed inset-0 z-[4000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setViewNoteModal({ isOpen: false, note: '', recordInfo: null })}></div>
+          <div className="relative bg-white w-full max-w-lg rounded-[32px] shadow-2xl p-8 animate-slide-up border border-slate-100 flex flex-col max-h-[80vh]">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                  <MessageSquare size={20} />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-800 text-lg">หมายเหตุเพิ่มเติม</h3>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{viewNoteModal.recordInfo}</p>
+                </div>
+              </div>
+              <button onClick={() => setViewNoteModal({ isOpen: false, note: '', recordInfo: null })} className="text-slate-400 hover:text-red-500 hover:bg-red-50 w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="bg-slate-50 rounded-2xl p-6 overflow-y-auto custom-scrollbar flex-1 border border-slate-100">
+              <p className="text-sm font-bold text-slate-600 leading-relaxed whitespace-pre-wrap">{viewNoteModal.note}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -10,7 +10,7 @@ import RecordList from './components/RecordList'
 import { supabase } from './supabaseClient'
 import { mapDBToState } from './utils/formatters'
 import { useNotifications } from './hooks/useNotifications'
-import { Toaster } from 'react-hot-toast'
+import { Toaster, toast } from 'react-hot-toast'
 import './App.css'
 
 function App() {
@@ -92,6 +92,17 @@ function App() {
     }
   }
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('ยืนยันการลบข้อมูลใช่หรือไม่?')) return;
+    const { error } = await supabase.from('ipd_records').delete().eq('id', id);
+    if (error) {
+      toast.error('ลบไม่สำเร็จ: ' + error.message);
+    } else {
+      setRecords(records.filter(r => r.id !== id));
+      toast.success('ลบข้อมูลเรียบร้อย');
+    }
+  };
+
   if (!session) return <Login onSession={setSession} />
 
   return (
@@ -124,7 +135,7 @@ function App() {
           />
         ) : activeTab === 'analytics' ? (
           <Analytics records={records} />
-        ) : activeTab === 'all_records' && userRole === 'admin' ? (
+        ) : activeTab === 'all_records' && (userRole === 'admin' || userRole === 'head_finance') ? (
           <div className="pt-8">
             <RecordList 
               records={records} 
@@ -135,10 +146,7 @@ function App() {
                 setSelectedDueRecord(record);
                 setShowDueDetailModal(true);
               }}
-              // Do not pass handleEdit, handleDelete, handleAdd, handleCloseHN if we want it read-only
-              // But if Admin should be able to edit, we can pass them or just omit them for a pure view.
-              // I will leave them out so it's a read-only list for closed/all cases, 
-              // except we might need to import RecordList if not imported, but wait, RecordList is not imported in App.jsx!
+              handleDelete={handleDelete}
             />
           </div>
         ) : activeTab === 'users' && userRole === 'admin' ? (

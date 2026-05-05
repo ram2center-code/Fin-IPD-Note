@@ -63,7 +63,10 @@ const UserManagement = () => {
   };
 
   const handleToggleRole = async (user) => {
-    const newRole = user.role === 'admin' ? 'staff' : 'admin';
+    let newRole = 'staff';
+    if (user.role === 'staff') newRole = 'head_finance';
+    else if (user.role === 'head_finance') newRole = 'admin';
+    else newRole = 'staff';
     setStatusLoading(user.id);
     const { error } = await supabase
       .from('profiles')
@@ -203,14 +206,14 @@ const UserManagement = () => {
           {filteredUsers.map((user) => (
             <div key={user.id} className={`bg-white border p-6 rounded-[28px] shadow-lg transition-all relative overflow-hidden flex flex-col ${user.is_disabled ? 'opacity-70 border-red-50' : 'border-slate-200'}`}>
               <div className="flex flex-col sm:flex-row sm:items-start gap-4 flex-1">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${user.is_disabled ? 'bg-red-50 text-red-500' : user.role === 'admin' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
-                  {user.is_disabled ? <Ban size={28} /> : user.role === 'admin' ? <ShieldCheck size={28} /> : <UserCircle size={28} />}
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${user.is_disabled ? 'bg-red-50 text-red-500' : user.role === 'admin' ? 'bg-indigo-600 text-white' : user.role === 'head_finance' ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                  {user.is_disabled ? <Ban size={28} /> : user.role === 'admin' ? <ShieldCheck size={28} /> : user.role === 'head_finance' ? <ShieldCheck size={28} /> : <UserCircle size={28} />}
                 </div>
                 <div className="min-w-0 pr-10">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-black text-slate-800 text-lg truncate">{user.display_name || 'Staff User'}</h3>
-                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase ${user.is_disabled ? 'bg-red-500 text-white' : user.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-50 text-slate-500'}`}>
-                      {user.is_disabled ? 'Banned' : user.role}
+                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase ${user.is_disabled ? 'bg-red-500 text-white' : user.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : user.role === 'head_finance' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-50 text-slate-500'}`}>
+                      {user.is_disabled ? 'Banned' : user.role === 'head_finance' ? 'Head of Finance' : user.role}
                     </span>
                   </div>
                   <p className="text-[11px] font-bold text-slate-400 truncate flex items-center gap-1.5"><Mail size={12} /> {user.email}</p>
@@ -287,7 +290,7 @@ const UserManagement = () => {
                       <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label><input type="text" required placeholder="ชื่อ-นามสกุล" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm" value={newUserData.displayName} onChange={(e) => setNewUserData({...newUserData, displayName: e.target.value})} /></div>
                       <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label><input type="text" required placeholder="เช่น john (ไม่ต้องใส่ @...)" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm" value={newUserData.email} onChange={(e) => setNewUserData({...newUserData, email: e.target.value})} /></div>
                       <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label><input type="password" required placeholder="รหัสผ่านเริ่มต้น" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm" value={newUserData.password} onChange={(e) => setNewUserData({...newUserData, password: e.target.value})} /></div>
-                      <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Initial Role</label><select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm appearance-none" value={newUserData.role} onChange={(e) => setNewUserData({...newUserData, role: e.target.value})}><option value="staff">Staff (มาตรฐาน)</option><option value="admin">Administrator (แอดมิน)</option></select></div>
+                      <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Initial Role</label><select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm appearance-none" value={newUserData.role} onChange={(e) => setNewUserData({...newUserData, role: e.target.value})}><option value="staff">Staff (มาตรฐาน)</option><option value="head_finance">Head of Finance (หัวหน้าแผนกการเงิน)</option><option value="admin">Administrator (แอดมิน)</option></select></div>
                       <div className="flex gap-3 pt-6"><button type="button" onClick={() => setIsAddingUser(false)} className="flex-1 py-4 text-slate-400 font-black text-xs uppercase">ยกเลิก</button><button type="submit" disabled={changeLoading} className="flex-2 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 text-xs uppercase flex items-center justify-center gap-2">{changeLoading ? <RefreshCcw size={18} className="animate-spin" /> : <ShieldCheck size={18} />}สร้างบัญชีผู้ใช้</button></div>
                   </form>
               </div>

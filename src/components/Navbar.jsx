@@ -50,32 +50,32 @@ const Navbar = ({ activeTab, setActiveTab, user, userRole, dueCount, pendingCase
             <span className="hidden xs:block">Analytics</span>
           </button>
 
-          {userRole === 'admin' && (
-            <>
-              <button 
-                className={`flex items-center gap-2 px-3 md:px-5 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 ${
-                  activeTab === 'all_records' 
-                    ? 'bg-white text-indigo-600 shadow-sm shadow-slate-200' 
-                    : 'text-slate-500 hover:text-indigo-600'
-                }`}
-                onClick={() => setActiveTab('all_records')}
-              >
-                <ListTodo size={18} />
-                <span className="hidden xs:block">ประวัติทั้งหมด</span>
-              </button>
+          {(userRole === 'admin' || userRole === 'head_finance') && (
+            <button 
+              className={`flex items-center gap-2 px-3 md:px-5 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 ${
+                activeTab === 'all_records' 
+                  ? 'bg-white text-indigo-600 shadow-sm shadow-slate-200' 
+                  : 'text-slate-500 hover:text-indigo-600'
+              }`}
+              onClick={() => setActiveTab('all_records')}
+            >
+              <ListTodo size={18} />
+              <span className="hidden xs:block">ประวัติทั้งหมด</span>
+            </button>
+          )}
 
-              <button 
-                className={`flex items-center gap-2 px-3 md:px-5 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 ${
-                  activeTab === 'users' 
-                    ? 'bg-white text-indigo-600 shadow-sm shadow-slate-200' 
-                    : 'text-slate-500 hover:text-indigo-600'
-                }`}
-                onClick={() => setActiveTab('users')}
-              >
-                <Users size={18} />
-                <span className="hidden lg:block">จัดการผู้ใช้</span>
-              </button>
-            </>
+          {userRole === 'admin' && (
+            <button 
+              className={`flex items-center gap-2 px-3 md:px-5 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 ${
+                activeTab === 'users' 
+                  ? 'bg-white text-indigo-600 shadow-sm shadow-slate-200' 
+                  : 'text-slate-500 hover:text-indigo-600'
+              }`}
+              onClick={() => setActiveTab('users')}
+            >
+              <Users size={18} />
+              <span className="hidden lg:block">จัดการผู้ใช้</span>
+            </button>
           )}
         </div>
 
