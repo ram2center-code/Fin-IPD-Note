@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import PatientForm from '../components/PatientForm';
 import RecordList from '../components/RecordList';
-import HistoryModal from '../components/HistoryModal';
 import { supabase } from '../supabaseClient';
 import { mapDBToState, mapStateToDB } from '../utils/formatters';
 import toast from 'react-hot-toast';
+import { CheckCircle } from 'lucide-react';
 
-const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setShowDueDetailModal, session }) => {
+const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setShowDueDetailModal, session, userRole }) => {
   const [activeTab, setActiveTab] = useState('form');
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [matchingRecords, setMatchingRecords] = useState([]);
+  const [targetCloseHN, setTargetCloseHN] = useState(null);
   const [editingId, setEditingId] = useState(null);
-  const [searchResult, setSearchResult] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     age: '',
@@ -40,66 +38,18 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
   const handleResetForm = () => {
     setFormData({
       fullName: '', age: '', hn: '', room: '', stayDays: '',
-      totalAmount: '', deposit: '', balance: 0, notifyCount: '',
+      totalAmount: '', deposit: '', balance: 0, notifyCount: '1',
       paymentType: '', checkDate: new Date().toISOString().split('T')[0],
       recordType: 'หลังทำหัตถการ', note: '',
       recordedBy: '',
       isAcknowledged: false
     });
     setEditingId(null);
-    setSearchResult(null);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-
-    if (name === 'hn') {
-      const hnValue = value.trim().toLowerCase();
-      if (hnValue.length > 0) {
-        const existingRecord = records.find(r => r.hn.toLowerCase() === hnValue);
-        if (existingRecord) {
-          setFormData(prev => ({ ...prev, fullName: existingRecord.fullName, age: existingRecord.age, room: '' }));
-        } else {
-          setFormData(prev => ({ ...prev, fullName: '', age: '', room: '' }));
-        }
-      } else {
-        setFormData(prev => ({ ...prev, fullName: '', age: '', room: '' }));
-      }
-    }
-  };
-
-  const handleCheckHistory = async (hn) => {
-    if (!hn) return;
-    const historicalRecords = records.filter(r => r.hn.toLowerCase() === hn.toLowerCase());
-    
-    if (historicalRecords.length === 0) {
-      setSearchResult('ไม่พบประวัติการรักษาเดิม');
-      setTimeout(() => setSearchResult(null), 3000);
-    } else if (historicalRecords.length === 1) {
-      const latest = historicalRecords[0];
-      setFormData(prev => ({
-        ...prev, fullName: latest.fullName, age: latest.age, room: '', 
-        stayDays: '', totalAmount: '', deposit: '', balance: 0, 
-        notifyCount: '', note: ''
-      }));
-      setSearchResult('ดึงข้อมูลเดิมสำเร็จ');
-      setTimeout(() => setSearchResult(null), 3000);
-    } else {
-      setMatchingRecords(historicalRecords);
-      setShowHistoryModal(true);
-    }
-  };
-
-  const handleSelectHistory = (record) => {
-    setFormData(prev => ({
-      ...prev, fullName: record.fullName, age: record.age, room: '', 
-      stayDays: '', totalAmount: '', deposit: '', balance: 0, 
-      notifyCount: '', note: ''
-    }));
-    setShowHistoryModal(false);
-    setSearchResult('ดึงข้อมูลที่เลือกแล้ว');
-    setTimeout(() => setSearchResult(null), 3000);
   };
 
   const handleEdit = (record) => {
@@ -147,24 +97,75 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
     }
   };
 
+  const handleCloseHN = (hn) => {
+    setTargetCloseHN(hn);
+  };
+
+  const executeCloseHN = async () => {
+    if (!targetCloseHN) return;
+    const hn = targetCloseHN;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ipd_records')
+        .update({ is_closed: true })
+        .eq('hn', hn);
+        
+      if (error) throw error;
+      
+      setRecords(records.map(r => r.hn === hn ? { ...r, isClosed: true } : r));
+      toast.success('ปิดเคสเรียบร้อย');
+      setTargetCloseHN(null);
+    } catch (err) {
+      toast.error('ปิดเคสไม่สำเร็จ: ' + err.message);
+      setTargetCloseHN(null);
+    }
+  };
+
+  const handleAddRecordForHN = (hn) => {
+    const existingRecord = records.find(r => r.hn === hn);
+    if (existingRecord) {
+      handleResetForm();
+      const hnRecordsCount = records.filter(r => r.hn === hn).length;
+      setFormData(prev => ({ 
+        ...prev, 
+        hn: existingRecord.hn, 
+        fullName: existingRecord.fullName, 
+        age: existingRecord.age,
+        room: existingRecord.room || '',
+        notifyCount: (hnRecordsCount + 1).toString(),
+        recordType: 'แจ้งยอดทุก 3 วัน'
+      }));
+      setActiveTab('form');
+    }
+  };
+
   return (
     <>
       <div className="flex justify-center mb-8">
-        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/50">
+        <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50">
           <button 
             onClick={() => {
               handleResetForm();
               setActiveTab('form');
             }}
-            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'form' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}
+            className={`px-8 py-3 rounded-xl font-black text-sm transition-all ${
+              activeTab === 'form' 
+                ? 'bg-white text-indigo-600 shadow-md' 
+                : 'text-slate-500 hover:text-indigo-600'
+            }`}
           >
             ฟอร์มบันทึก
           </button>
           <button 
             onClick={() => setActiveTab('list')}
-            className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}
+            className={`px-8 py-3 rounded-xl font-black text-sm transition-all ${
+              activeTab === 'list' 
+                ? 'bg-white text-indigo-600 shadow-md' 
+                : 'text-slate-500 hover:text-indigo-600'
+            }`}
           >
-            รายการทั้งหมด
+            รายการคนไข้
           </button>
         </div>
       </div>
@@ -173,10 +174,9 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
         <PatientForm
           user={session?.user}
           formData={formData}
+          records={records}
           handleInputChange={handleInputChange}
           handleSubmit={handleSubmit}
-          handleCheckHistory={handleCheckHistory}
-          searchResult={searchResult}
           editingId={editingId}
           handleCancelEdit={handleResetForm}
           handleResetForm={handleResetForm}
@@ -185,21 +185,37 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
         <RecordList 
           records={records} 
           dueRecords={dueRecords}
+          userRole={userRole}
           onOpenDetail={(record) => {
             setSelectedDueRecord(record);
             setShowDueDetailModal(true);
           }}
           handleEdit={handleEdit}
           handleDelete={handleDelete}
+          handleAdd={handleAddRecordForHN}
+          handleCloseHN={handleCloseHN}
         />
       )}
 
-      <HistoryModal 
-        isOpen={showHistoryModal}
-        historyData={matchingRecords}
-        onClose={() => setShowHistoryModal(false)}
-        onSelect={handleSelectHistory}
-      />
+      {targetCloseHN && (
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setTargetCloseHN(null)}></div>
+          <div className="relative bg-white w-full max-w-sm rounded-[40px] shadow-2xl p-10 animate-slide-up border border-slate-100 text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+               <CheckCircle className="text-red-500" size={32} />
+            </div>
+            <h3 className="text-2xl font-black text-slate-800 mb-2">ยืนยันการปิดเคส?</h3>
+            <p className="text-sm font-bold text-slate-500">
+              คุณต้องการปิดเคสของ HN: <span className="text-indigo-600">{targetCloseHN}</span> ใช่หรือไม่?<br/>
+              <span className="text-xs text-slate-400 font-normal mt-2 block">หากปิดเคสแล้ว ผู้ใช้อื่นจะมองไม่เห็นรายการนี้อีก</span>
+            </p>
+            <div className="flex flex-col gap-3 mt-8">
+              <button onClick={executeCloseHN} className="w-full py-4 bg-red-500 text-white font-black rounded-2xl shadow-xl hover:bg-red-600 transition-all uppercase text-sm">ยืนยันการปิดเคส</button>
+              <button onClick={() => setTargetCloseHN(null)} className="w-full py-4 text-slate-400 font-black rounded-2xl hover:bg-slate-50 transition-all uppercase text-xs">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

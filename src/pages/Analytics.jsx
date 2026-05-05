@@ -97,15 +97,15 @@ const Analytics = ({ records: allRecords }) => {
             </div>
           </div>
 
-          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/50 self-start md:self-center">
+          <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50 self-start md:self-center">
             {['all', 'หลังทำหัตถการ', 'แจ้งยอดทุก 3 วัน'].map((type) => (
               <button
                 key={type}
                 onClick={() => setTypeFilter(type)}
-                className={`px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
+                className={`px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
                   typeFilter === type 
-                    ? 'bg-white text-indigo-600 shadow-sm' 
-                    : 'text-slate-400 hover:text-indigo-600'
+                    ? 'bg-white text-indigo-600 shadow-md' 
+                    : 'text-slate-500 hover:text-indigo-600'
                 }`}
               >
                 {type === 'all' ? 'ทั้งหมด' : type}

@@ -18,7 +18,8 @@ export const mapDBToState = (r) => ({
   notifyCount: r.notify_count,
   note: r.note,
   recordedBy: r.recorded_by,
-  isAcknowledged: r.is_acknowledged || false
+  isAcknowledged: r.is_acknowledged || false,
+  isClosed: r.is_closed || false
 });
 
 export const mapStateToDB = (formData, session) => ({
@@ -36,5 +37,6 @@ export const mapStateToDB = (formData, session) => ({
   notify_count: formData.notifyCount,
   note: formData.note,
   recorded_by: formData.recordedBy || session?.user?.user_metadata?.display_name || session?.user?.email?.split('@')[0] || 'User',
-  is_acknowledged: formData.isAcknowledged || false
+  is_acknowledged: formData.isAcknowledged || false,
+  is_closed: formData.isClosed || false
 });

@@ -6,6 +6,7 @@ import DueDetailModal from './components/DueDetailModal'
 import NotificationModal from './components/NotificationModal'
 import Dashboard from './pages/Dashboard'
 import Analytics from './pages/Analytics'
+import RecordList from './components/RecordList'
 import { supabase } from './supabaseClient'
 import { mapDBToState } from './utils/formatters'
 import { useNotifications } from './hooks/useNotifications'
@@ -103,6 +104,7 @@ function App() {
         user={session?.user} 
         userRole={userRole}
         dueCount={dueRecords.length}
+        pendingCasesCount={new Set(records.filter(r => !r.isClosed).map(r => r.hn)).size}
         isMuted={isMuted}
         setIsMuted={setIsMuted}
         onOpenNotifications={() => setShowNotificationModal(true)}
@@ -118,9 +120,27 @@ function App() {
             setSelectedDueRecord={setSelectedDueRecord}
             setShowDueDetailModal={setShowDueDetailModal}
             session={session}
+            userRole={userRole}
           />
         ) : activeTab === 'analytics' ? (
           <Analytics records={records} />
+        ) : activeTab === 'all_records' && userRole === 'admin' ? (
+          <div className="pt-8">
+            <RecordList 
+              records={records} 
+              dueRecords={dueRecords}
+              userRole={userRole}
+              showClosedCases={true}
+              onOpenDetail={(record) => {
+                setSelectedDueRecord(record);
+                setShowDueDetailModal(true);
+              }}
+              // Do not pass handleEdit, handleDelete, handleAdd, handleCloseHN if we want it read-only
+              // But if Admin should be able to edit, we can pass them or just omit them for a pure view.
+              // I will leave them out so it's a read-only list for closed/all cases, 
+              // except we might need to import RecordList if not imported, but wait, RecordList is not imported in App.jsx!
+            />
+          </div>
         ) : activeTab === 'users' && userRole === 'admin' ? (
           <UserManagement />
         ) : null}
