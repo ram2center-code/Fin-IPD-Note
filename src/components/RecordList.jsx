@@ -68,7 +68,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
       <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-[32px] p-8 mb-10 shadow-2xl shadow-slate-200/50">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
           <div>
-            <h2 className="text-2xl font-black text-slate-800 leading-tight">{showClosedCases ? 'ประวัติทั้งหมด (Admin)' : 'Clinical Summary'}</h2>
+            <h2 className="text-2xl font-black text-slate-800 leading-tight">{showClosedCases ? 'ประวัติทั้งหมด' : 'Clinical Summary'}</h2>
             <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest tabular-nums">
               Total: {records.length} patients | Showing: {sortedHNs.length} groups
             </p>
@@ -283,7 +283,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                                 </td>
                                 <td className="px-4 py-4">
                                   {record.note ? (
-                                    <button 
+                                    <button
                                       onClick={() => setViewNoteModal({ isOpen: true, note: record.note, recordInfo: `${patientData.fullName} (HN: ${hn})` })}
                                       className="text-xs font-bold text-slate-500 line-clamp-1 italic hover:text-indigo-600 hover:underline text-left"
                                       title="คลิกเพื่ออ่านแบบเต็ม"
@@ -344,7 +344,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                             {record.note && (
                               <div className="flex items-start gap-2 bg-white/50 p-2 rounded-xl border border-slate-100">
                                 <MessageSquare size={14} className="text-slate-500 mt-0.5" />
-                                <p 
+                                <p
                                   className="text-xs italic font-bold text-slate-500 cursor-pointer hover:text-indigo-600 hover:underline line-clamp-2"
                                   onClick={() => setViewNoteModal({ isOpen: true, note: record.note, recordInfo: `${patientData.fullName} (HN: ${hn})` })}
                                 >

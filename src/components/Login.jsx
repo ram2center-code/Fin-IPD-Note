@@ -36,7 +36,7 @@ const Login = ({ onSession }) => {
           .from('profiles')
           .update({ force_password_reset: false })
           .eq('id', tempSession.user.id);
-        
+
         if (profileError) throw profileError;
 
         setIsForceReset(false);
@@ -63,14 +63,14 @@ const Login = ({ onSession }) => {
           password,
         });
         if (signInError) throw signInError;
-        
+
         // CHECK PROFILE STATUS
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', data.user.id)
           .single();
-        
+
         if (profileError) throw profileError;
 
         if (profile.is_disabled) {
@@ -99,16 +99,16 @@ const Login = ({ onSession }) => {
       {/* Background Decorations */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/50 rounded-full blur-[120px] animate-pulse"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-200/50 rounded-full blur-[120px] animate-pulse delay-1000"></div>
-      
+
       <div className="w-full max-w-md px-6 z-10 animate-fade-in">
         <div className="bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[35px] shadow-2xl shadow-indigo-100/50 p-10 relative">
-          
+
           {/* Header */}
           <div className="text-center mb-10">
-            <img 
-              src="/pwa-192x192.png" 
-              alt="Logo" 
-              className="w-16 h-16 rounded-2xl shadow-xl shadow-indigo-100 mx-auto mb-6 object-cover bg-white p-1" 
+            <img
+              src="/pwa-192x192.png"
+              alt="Logo"
+              className="w-16 h-16 rounded-2xl shadow-xl shadow-indigo-100 mx-auto mb-6 object-cover bg-white p-1"
             />
             <h2 className="text-3xl font-black text-slate-800 leading-tight">
               {isForceReset ? 'ตั้งรหัสผ่านใหม่' : isRegister ? 'สร้างบัญชีใหม่' : 'ยินดีต้อนรับ'}
@@ -139,8 +139,8 @@ const Login = ({ onSession }) => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
                 <div className="relative">
                   <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     required
                     placeholder="รหัสผ่านใหม่"
                     className="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 focus:bg-white outline-none transition-all font-semibold text-slate-700"
@@ -156,8 +156,8 @@ const Login = ({ onSession }) => {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Display Name</label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         placeholder="ชื่อที่ต้องการให้แสดง"
                         className="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 focus:bg-white outline-none transition-all font-semibold text-slate-700"
@@ -172,8 +172,8 @@ const Login = ({ onSession }) => {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       placeholder="ใส่เฉพาะชื่อ หรือ Email"
                       className="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 focus:bg-white outline-none transition-all font-semibold text-slate-700"
@@ -187,8 +187,8 @@ const Login = ({ onSession }) => {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input 
-                      type="password" 
+                    <input
+                      type="password"
                       required
                       placeholder="••••••••"
                       className="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 focus:bg-white outline-none transition-all font-semibold text-slate-700"
@@ -200,8 +200,8 @@ const Login = ({ onSession }) => {
               </>
             )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-2xl hover:-translate-y-1 active:scale-95 transition-all text-sm uppercase tracking-widest flex items-center justify-center gap-3"
             >
@@ -216,11 +216,11 @@ const Login = ({ onSession }) => {
             </button>
           </form>
 
-          {!isForceReset && (
+          {/* {!isForceReset && (
             <div className="mt-10 pt-6 border-t border-slate-100 text-center">
               <p className="text-xs font-bold text-slate-400">
                 {isRegister ? 'เป็นสมาชิกอยู่แล้ว?' : 'ยังไม่เคยมีบัญชี?'}{' '}
-                <button 
+                <button
                   onClick={() => setIsRegister(!isRegister)}
                   className="text-indigo-600 hover:text-indigo-800 transition-colors ml-1 uppercase"
                 >
@@ -228,9 +228,9 @@ const Login = ({ onSession }) => {
                 </button>
               </p>
             </div>
-          )}
+          )} */}
         </div>
-        
+
         <p className="text-center mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-60">
           &copy; 2026 Admin Portal Security Powered by Supabase
         </p>
