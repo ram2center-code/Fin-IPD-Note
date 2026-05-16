@@ -278,7 +278,7 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                                 <td className="px-4 py-4 text-right font-bold text-slate-500 text-sm tabular-nums">{Number(record.deposit).toLocaleString()}</td>
                                 <td className="px-4 py-4 text-center">
                                   <span className="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-600 rounded-full text-[11px] font-black mx-auto">
-                                    {record.notifyCount || '-'}
+                                    {record.notifyCount || 1}
                                   </span>
                                 </td>
                                 <td className="px-4 py-4">

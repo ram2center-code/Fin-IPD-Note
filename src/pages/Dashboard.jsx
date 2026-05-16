@@ -20,7 +20,7 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
     totalAmount: '',
     deposit: '',
     balance: 0,
-    notifyCount: '',
+    notifyCount: '1',
     paymentType: '',
     recordType: 'หลังทำหัตถการ',
     note: '',
