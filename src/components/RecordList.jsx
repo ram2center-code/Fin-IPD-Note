@@ -142,7 +142,6 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
             const patientData = groupedByHN[hn];
             const isExpanded = expandedHN === hn;
             const latestRecord = patientData.records[0];
-            const totalBalance = patientData.records.reduce((sum, r) => sum + (Number(r.balance) || 0), 0);
             const hasDue = patientData.records.some(r => dueRecords?.some(dr => dr.id === r.id));
 
             return (
@@ -150,14 +149,14 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                 {/* Accordion Header */}
                 <div
                   onClick={() => toggleHN(hn)}
-                  className="p-6 cursor-pointer flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-slate-50/50 transition-colors"
+                  className="p-6 cursor-pointer flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 hover:bg-slate-50/50 transition-colors"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 min-w-[280px]">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isExpanded ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-slate-100 text-slate-500'}`}>
                       <User size={24} />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-black text-slate-800 text-lg leading-tight">{patientData.fullName}</h3>
                         <span className="text-[10px] font-black text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-lg tabular-nums">HN: {hn}</span>
                         {patientData.records[0].isClosed ? (
@@ -169,11 +168,70 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                           <Bell size={14} className="text-red-500 animate-bounce" />
                         )}
                       </div>
-                      <p className="text-xs font-bold text-slate-500 mt-0.5 uppercase tracking-widest">
-                        อายุ {patientData.age} ปี | {patientData.records.length} ประวัติการรักษา
+                      <p className="text-xs font-bold text-slate-500 mt-0.5 uppercase tracking-widest flex flex-wrap gap-x-2 gap-y-1 items-center">
+                        <span>อายุ {patientData.age} ปี</span>
+                        <span>•</span>
+                        <span>{patientData.records.length} ประวัติ</span>
+                        {latestRecord && (
+                          <>
+                            <span className="lg:hidden">•</span>
+                            <span className="lg:hidden text-indigo-600 font-black">ห้อง {latestRecord.room}</span>
+                            <span className="lg:hidden">•</span>
+                            <span className={`lg:hidden font-black ${Number(latestRecord.balance) > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                              คงเหลือ: {Number(latestRecord.balance).toLocaleString()}
+                            </span>
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
+
+                  {/* Latest Record Dashboard Summary (Desktop) */}
+                  {latestRecord && (
+                    <div className="hidden lg:flex items-center gap-6 text-left flex-1 justify-center px-4">
+                      {/* Room */}
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">ห้อง</span>
+                        <span className="text-sm font-black text-slate-700 tabular-nums">ห้อง {latestRecord.room || '-'}</span>
+                      </div>
+                      
+                      {/* Divider */}
+                      <div className="w-px h-8 bg-slate-100"></div>
+
+                      {/* Payment/Record Types */}
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">การชำระ / ประเภท</span>
+                        <div className="flex gap-1.5 mt-0.5">
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${latestRecord.paymentType === 'ชำระเอง' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-stone-50 text-stone-600 border border-stone-100'}`}>
+                            {latestRecord.paymentType || '-'}
+                          </span>
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${latestRecord.recordType === 'หลังทำหัตถการ' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'}`}>
+                            {latestRecord.recordType || '-'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="w-px h-8 bg-slate-100"></div>
+
+                      {/* Last Check Date */}
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">เช็คล่าสุด</span>
+                        <span className="text-xs font-bold text-slate-600 tabular-nums">{formatDateThai(latestRecord.checkDate)}</span>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="w-px h-8 bg-slate-100"></div>
+
+                      {/* Balance */}
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">ยอดค้างล่าสุด</span>
+                        <span className={`text-base font-black tabular-nums ${Number(latestRecord.balance) > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                          {Number(latestRecord.balance).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-4 md:pt-0 mt-2 md:mt-0">
                     {!patientData.records[0].isClosed && (

@@ -50,9 +50,18 @@ const NotificationModal = ({ isOpen, onClose, dueRecords, onSelectRecord, onAckn
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-0.5">
                     <h4 className="font-black text-slate-800 text-sm truncate">{record.fullName}</h4>
-                    <span className="text-[9px] font-black text-red-500 bg-red-50 px-1.5 py-0.5 rounded uppercase ml-2 shrink-0">Due</span>
+                    {record.dueType === 'limit_500k' ? (
+                      <span className="text-[9px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase ml-2 shrink-0 border border-amber-100 animate-pulse">500k+</span>
+                    ) : (
+                      <span className="text-[9px] font-black text-red-500 bg-red-50 px-1.5 py-0.5 rounded uppercase ml-2 shrink-0">Due</span>
+                    )}
                   </div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">HN: {record.hn} | ห้อง {record.room}</p>
+                  {record.dueMessage && (
+                    <p className={`text-[10px] font-bold mt-1 ${record.dueType === 'limit_500k' ? 'text-amber-500' : 'text-indigo-500'}`}>
+                      • {record.dueMessage}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                    <button

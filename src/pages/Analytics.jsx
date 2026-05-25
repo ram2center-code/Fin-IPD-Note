@@ -19,12 +19,38 @@ const Analytics = ({ records: allRecords }) => {
     return allRecords.filter(r => r.recordType === typeFilter);
   }, [allRecords, typeFilter]);
 
+  // Group records by HN to find the latest record for each active patient
+  const activeRecords = useMemo(() => {
+    const groups = {};
+    records.forEach(r => {
+      if (!groups[r.hn]) {
+        groups[r.hn] = [];
+      }
+      groups[r.hn].push(r);
+    });
+
+    const latestActive = [];
+    Object.keys(groups).forEach(hn => {
+      const patientRecords = groups[hn];
+      // Sort to get the latest record (most recent checkDate)
+      patientRecords.sort((a, b) => new Date(b.checkDate) - new Date(a.checkDate));
+      
+      const latest = patientRecords[0];
+      if (latest && !latest.isClosed) {
+        latestActive.push(latest);
+      }
+    });
+
+    return latestActive;
+  }, [records]);
+
   // 1. Calculate Metrics
   const metrics = useMemo(() => {
-    const totalBalance = records.reduce((sum, r) => sum + (parseFloat(r.balance) || 0), 0);
-    const avgBalance = records.length > 0 ? totalBalance / records.length : 0;
-    const postOpCases = records.filter(r => r.recordType === 'หลังทำหัตถการ').length;
-    const dueCases = records.filter(r => {
+    const totalBalance = activeRecords.reduce((sum, r) => sum + (parseFloat(r.balance) || 0), 0);
+    const totalDeposit = activeRecords.reduce((sum, r) => sum + (parseFloat(r.deposit) || 0), 0);
+    const pendingCasesCount = activeRecords.length;
+    const postOpCases = activeRecords.filter(r => r.recordType === 'หลังทำหัตถการ').length;
+    const dueCases = activeRecords.filter(r => {
         if (r.recordType !== 'แจ้งยอดทุก 3 วัน') return false;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -34,9 +60,10 @@ const Analytics = ({ records: allRecords }) => {
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         return diffDays > 0 && diffDays % 3 === 0;
     }).length;
+    const avgBalance = pendingCasesCount > 0 ? totalBalance / pendingCasesCount : 0;
 
-    return { totalBalance, avgBalance, totalCases: records.length, postOpCases, dueCases };
-  }, [records]);
+    return { totalBalance, totalDeposit, avgBalance, pendingCasesCount, postOpCases, dueCases };
+  }, [activeRecords]);
 
   // 2. Data for Bar Chart: Daily Cases (Last 7 Days)
   const dailyData = useMemo(() => {
@@ -47,16 +74,16 @@ const Analytics = ({ records: allRecords }) => {
     }).reverse();
 
     return last7Days.map(date => {
-      const count = records.filter(r => r.checkDate === date).length;
+      const count = activeRecords.filter(r => r.checkDate === date).length;
       const dayLabel = new Date(date).toLocaleDateString('th-TH', { weekday: 'short' });
       return { name: dayLabel, date, count };
     });
-  }, [records]);
+  }, [activeRecords]);
 
   // 3. Data for Pie Chart: Payment Types
   const paymentData = useMemo(() => {
     const counts = {};
-    records.forEach(r => {
+    activeRecords.forEach(r => {
       const type = r.paymentType || 'อื่นๆ';
       counts[type] = (counts[type] || 0) + 1;
     });
@@ -64,15 +91,15 @@ const Analytics = ({ records: allRecords }) => {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 6);
-  }, [records]);
+  }, [activeRecords]);
 
   // 4. Data for Area Chart: Balance Trend
   const trendData = useMemo(() => {
-    const sortedRecords = [...records].sort((a, b) => new Date(a.checkDate) - new Date(b.checkDate));
+    const sortedRecords = [...activeRecords].sort((a, b) => new Date(a.checkDate) - new Date(b.checkDate));
     const dates = [...new Set(sortedRecords.map(r => r.checkDate))].slice(-10); // Last 10 unique dates
     
     return dates.map(date => {
-      const dayBalance = records
+      const dayBalance = activeRecords
         .filter(r => r.checkDate === date)
         .reduce((sum, r) => sum + (parseFloat(r.balance) || 0), 0);
       return { 
@@ -80,7 +107,7 @@ const Analytics = ({ records: allRecords }) => {
         balance: dayBalance 
       };
     });
-  }, [records]);
+  }, [activeRecords]);
 
   return (
     <div className="animate-fade-in space-y-8 pb-20 max-w-[1200px] mx-auto px-4">
@@ -119,8 +146,8 @@ const Analytics = ({ records: allRecords }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'ยอดคงเหลือรวม', value: metrics.totalBalance.toLocaleString(), icon: <Banknote />, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'จำนวนเคสทั้งหมด', value: metrics.totalCases, icon: <Users />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'เฉลี่ยต่อเคส', value: Math.round(metrics.avgBalance).toLocaleString(), icon: <TrendingUp />, color: 'text-violet-600', bg: 'bg-violet-50' },
+          { label: 'ยอดรวมมัดจำ (Deposit)', value: metrics.totalDeposit.toLocaleString(), icon: <Banknote />, color: 'text-violet-600', bg: 'bg-violet-50' },
+          { label: 'จำนวนเคสที่ค้าง', value: metrics.pendingCasesCount, icon: <Users />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
           { label: 'ครบกำหนดแจ้ง (DUE)', value: metrics.dueCases, icon: <Clock />, color: 'text-rose-600', bg: 'bg-rose-50' },
         ].map((item, i) => (
           <div key={i} className="bg-white border border-slate-100 p-6 rounded-[32px] shadow-lg hover:shadow-xl transition-all group">

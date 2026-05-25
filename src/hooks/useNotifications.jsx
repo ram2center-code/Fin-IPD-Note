@@ -42,20 +42,66 @@ export const useNotifications = (records, isMuted, setSelectedDueRecord, setShow
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const due = records.filter(r => {
-      if (r.isAcknowledged) return false;
-      if (r.recordType !== 'แจ้งยอดทุก 3 วัน') return false;
-      const checkDate = new Date(r.checkDate);
+    const due = [];
+    
+    // Group records by HN
+    const groups = {};
+    records.forEach(r => {
+      if (!groups[r.hn]) {
+        groups[r.hn] = [];
+      }
+      groups[r.hn].push(r);
+    });
+
+    Object.keys(groups).forEach(hn => {
+      const patientRecords = groups[hn];
+      // Sort chronologically (oldest first, latest last)
+      patientRecords.sort((a, b) => new Date(a.checkDate) - new Date(b.checkDate));
+      
+      const latest = patientRecords[patientRecords.length - 1];
+      if (!latest || latest.isAcknowledged) return;
+
+      const checkDate = new Date(latest.checkDate);
       checkDate.setHours(0, 0, 0, 0);
       const diffTime = today - checkDate;
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 && diffDays % 3 === 0;
+      
+      const isDue3Days = latest.recordType === 'แจ้งยอดทุก 3 วัน' && diffDays > 0 && diffDays % 3 === 0;
+
+      // 500k Threshold Crossing Logic (triggers every 500,000 increment: 500k, 1M, 1.5M, etc.)
+      const currentBracket = Math.floor((parseFloat(latest.totalAmount) || 0) / 500000);
+      let isDue500k = false;
+      let thresholdValue = 0;
+
+      if (currentBracket > 0) {
+        // Compare with the previous record of this patient (if any)
+        const prev = patientRecords.length > 1 ? patientRecords[patientRecords.length - 2] : null;
+        const prevBracket = prev ? Math.floor((parseFloat(prev.totalAmount) || 0) / 500000) : 0;
+        
+        if (currentBracket > prevBracket) {
+          isDue500k = true;
+          thresholdValue = currentBracket * 500000;
+        }
+      }
+
+      if (isDue3Days || isDue500k) {
+        due.push({
+          ...latest,
+          dueType: isDue500k ? 'limit_500k' : 'interval_3days',
+          dueMessage: isDue500k 
+            ? `ยอดสะสมแตะระดับใหม่ที่ ${thresholdValue.toLocaleString()} บาท` 
+            : 'ครบรอบเช็คยอดทุก 3 วัน'
+        });
+      }
     });
+
+    // Since we grouped by HN and checked the latest record, due already contains at most 1 item per unique HN
+    const uniqueDue = due;
     
-    setDueRecords(due);
+    setDueRecords(uniqueDue);
     
-    const currentDueIds = due.map(r => r.id);
-    const newDueRecords = due.filter(r => !prevDueIds.current.includes(r.id));
+    const currentDueIds = uniqueDue.map(r => r.id);
+    const newDueRecords = uniqueDue.filter(r => !prevDueIds.current.includes(r.id));
 
     if (newDueRecords.length > 0) {
       playNotificationSound();
@@ -74,9 +120,11 @@ export const useNotifications = (records, isMuted, setSelectedDueRecord, setShow
                 <Bell size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">ครบกำหนดแจ้งยอด</p>
+                <p className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${record.dueType === 'limit_500k' ? 'text-amber-500' : 'text-slate-400'}`}>
+                  {record.dueType === 'limit_500k' ? '⚠ ยอดสะสมสูง (500k+)' : 'ครบกำหนดแจ้งยอด'}
+                </p>
                 <p className="text-sm font-black text-slate-800 truncate">{record.fullName}</p>
-                <p className="text-[10px] font-bold text-slate-400 tabular-nums">HN: {record.hn}</p>
+                <p className="text-[10px] font-bold text-slate-400 tabular-nums">HN: {record.hn} | {Number(record.totalAmount).toLocaleString()} บ.</p>
               </div>
               <button 
                 onClick={() => {
