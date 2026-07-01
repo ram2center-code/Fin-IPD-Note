@@ -5,13 +5,20 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, Users, Banknote, Clock, 
-  PieChart as PieIcon, BarChart3, Activity
+  PieChart as PieIcon, BarChart3, Activity, Download, X
 } from 'lucide-react';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 const Analytics = ({ records: allRecords }) => {
   const [typeFilter, setTypeFilter] = React.useState('all');
+  const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
+  const [exportFilters, setExportFilters] = React.useState({
+    dateRange: 'all',
+    caseStatus: 'all',
+    recordType: 'all',
+    balanceThreshold: 'all',
+  });
 
   // Filter records based on selection
   const records = useMemo(() => {
@@ -109,6 +116,216 @@ const Analytics = ({ records: allRecords }) => {
     });
   }, [activeRecords]);
 
+  // Group records by HN and combine their notes chronologically
+  const getGroupedRecordsForExport = React.useCallback((recordList) => {
+    const groups = {};
+    recordList.forEach(r => {
+      if (!groups[r.hn]) {
+        groups[r.hn] = [];
+      }
+      groups[r.hn].push(r);
+    });
+
+    const groupedList = [];
+    Object.keys(groups).forEach(hn => {
+      const patientRecords = groups[hn];
+      
+      // Concatenate all unique non-empty notes from all records of this patient
+      const noteParts = [];
+      const allPatientRecords = (allRecords || []).filter(p => p.hn === hn);
+      // Sort chronologically ascending to merge notes in order of time
+      allPatientRecords.sort((a, b) => new Date(a.checkDate) - new Date(b.checkDate));
+      
+      allPatientRecords.forEach(r => {
+        if (r.note && r.note.trim()) {
+          const trimmed = r.note.trim();
+          if (!noteParts.includes(trimmed)) {
+            noteParts.push(trimmed);
+          }
+        }
+      });
+      const mergedNotes = noteParts.join(' | ');
+
+      // Sort chronologically descending to get the latest record as primary representation
+      patientRecords.sort((a, b) => new Date(b.checkDate) - new Date(a.checkDate));
+      const latestRecord = { ...patientRecords[0] };
+      latestRecord.note = mergedNotes;
+      groupedList.push(latestRecord);
+    });
+
+    // Sort by checkDate descending for standard display
+    groupedList.sort((a, b) => new Date(b.checkDate) - new Date(a.checkDate));
+    return groupedList;
+  }, [allRecords]);
+
+  // Calculate matching export record count dynamically
+  const previewCount = useMemo(() => {
+    let filtered = [...allRecords];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (exportFilters.recordType !== 'all') {
+      filtered = filtered.filter(r => r.recordType === exportFilters.recordType);
+    }
+
+    if (exportFilters.dateRange === 'today') {
+      filtered = filtered.filter(r => {
+        const checkDate = new Date(r.checkDate);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate.getTime() === today.getTime();
+      });
+    } else if (exportFilters.dateRange === '7days') {
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      filtered = filtered.filter(r => {
+        const checkDate = new Date(r.checkDate);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate >= sevenDaysAgo;
+      });
+    } else if (exportFilters.dateRange === '30days') {
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      filtered = filtered.filter(r => {
+        const checkDate = new Date(r.checkDate);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate >= thirtyDaysAgo;
+      });
+    }
+
+    if (exportFilters.caseStatus === 'active') {
+      filtered = filtered.filter(r => !r.isClosed);
+    } else if (exportFilters.caseStatus === 'closed') {
+      filtered = filtered.filter(r => r.isClosed);
+    }
+
+    if (exportFilters.balanceThreshold === 'gt100k') {
+      filtered = filtered.filter(r => (parseFloat(r.balance) || 0) > 100000);
+    } else if (exportFilters.balanceThreshold === 'gt500k') {
+      filtered = filtered.filter(r => (parseFloat(r.balance) || 0) > 500000);
+    } else if (exportFilters.balanceThreshold === 'lt100k') {
+      filtered = filtered.filter(r => (parseFloat(r.balance) || 0) < 100000);
+    }
+
+    const grouped = getGroupedRecordsForExport(filtered);
+    return grouped.length;
+  }, [allRecords, exportFilters, getGroupedRecordsForExport]);
+
+  // Export to CSV Function with date, status and record type filters
+  const handleExportCSV = () => {
+    let filtered = [...allRecords];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (exportFilters.recordType !== 'all') {
+      filtered = filtered.filter(r => r.recordType === exportFilters.recordType);
+    }
+
+    if (exportFilters.dateRange === 'today') {
+      filtered = filtered.filter(r => {
+        const checkDate = new Date(r.checkDate);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate.getTime() === today.getTime();
+      });
+    } else if (exportFilters.dateRange === '7days') {
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      filtered = filtered.filter(r => {
+        const checkDate = new Date(r.checkDate);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate >= sevenDaysAgo;
+      });
+    } else if (exportFilters.dateRange === '30days') {
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      filtered = filtered.filter(r => {
+        const checkDate = new Date(r.checkDate);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate >= thirtyDaysAgo;
+      });
+    }
+
+    if (exportFilters.caseStatus === 'active') {
+      filtered = filtered.filter(r => !r.isClosed);
+    } else if (exportFilters.caseStatus === 'closed') {
+      filtered = filtered.filter(r => r.isClosed);
+    }
+
+    if (exportFilters.balanceThreshold === 'gt100k') {
+      filtered = filtered.filter(r => (parseFloat(r.balance) || 0) > 100000);
+    } else if (exportFilters.balanceThreshold === 'gt500k') {
+      filtered = filtered.filter(r => (parseFloat(r.balance) || 0) > 500000);
+    } else if (exportFilters.balanceThreshold === 'lt100k') {
+      filtered = filtered.filter(r => (parseFloat(r.balance) || 0) < 100000);
+    }
+
+    // Get unique patients and merge notes
+    const grouped = getGroupedRecordsForExport(filtered);
+
+    // Define headers matching the print template exactly
+    const headers = [
+      'ลำดับ', 'ROOM', 'HN', 'ชื่อ-นามสกุล', 'ชำระเอง', 'ประกัน', 
+      'วันที่ Admit', 'จำนวนวันนอน', 'ยอดปัจจุบัน', 'Deposit ล่าสุด', 'ยอดDeposit', 'คงเหลือ', 'หมายเหตุ'
+    ];
+
+    // Map records to rows
+    const csvRows = [
+      headers.join(','),
+      ...grouped.map((r, index) => {
+        const isSelfPay = r.paymentType === 'ชำระเอง';
+        const isInsurance = r.paymentType !== 'ชำระเอง';
+
+        // Format dates as m/d/yyyy
+        const formatDate = (dateStr) => {
+          if (!dateStr) return '';
+          const d = new Date(dateStr);
+          return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        };
+
+        const row = [
+          index + 1,
+          r.room || '',
+          r.hn || '',
+          `"${(r.fullName || '').replace(/"/g, '""')}"`,
+          isSelfPay ? '✓' : '',
+          isInsurance ? '✓' : '',
+          formatDate(r.admitDate),
+          r.stayDays || '',
+          r.totalAmount || 0,
+          r.deposit || '',
+          '', // ยอดDeposit (leave blank as in print format)
+          r.balance || 0,
+          `"${(r.note || '').replace(/"/g, '""')}"`
+        ];
+        return row.join(',');
+      })
+    ];
+
+    // Add UTF-8 BOM so Excel opens Thai characters correctly
+    const csvContent = '\uFEFF' + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    // Filename format: IPD_Records_Export_dd-mm-yyyy.csv
+    const dateStr = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `IPD_Records_Export_${exportFilters.dateRange}_${exportFilters.caseStatus}_${dateStr}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setIsExportModalOpen(false);
+  };
+
+
+  const handleOpenExportModal = () => {
+    setExportFilters(prev => ({
+      ...prev,
+      recordType: typeFilter
+    }));
+    setIsExportModalOpen(true);
+  };
+
   return (
     <div className="animate-fade-in space-y-8 pb-20 max-w-[1200px] mx-auto px-4">
       {/* Header Info */}
@@ -124,20 +341,30 @@ const Analytics = ({ records: allRecords }) => {
             </div>
           </div>
 
-          <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50 self-start md:self-center">
-            {['all', 'หลังทำหัตถการ', 'แจ้งยอดทุก 3 วัน'].map((type) => (
-              <button
-                key={type}
-                onClick={() => setTypeFilter(type)}
-                className={`px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
-                  typeFilter === type 
-                    ? 'bg-white text-indigo-600 shadow-md' 
-                    : 'text-slate-500 hover:text-indigo-600'
-                }`}
-              >
-                {type === 'all' ? 'ทั้งหมด' : type}
-              </button>
-            ))}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 self-start md:self-center w-full md:w-auto">
+            <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50">
+              {['all', 'หลังทำหัตถการ', 'แจ้งยอดทุก 3 วัน'].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setTypeFilter(type)}
+                  className={`px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
+                    typeFilter === type 
+                      ? 'bg-white text-indigo-600 shadow-md' 
+                      : 'text-slate-500 hover:text-indigo-600'
+                  }`}
+                >
+                  {type === 'all' ? 'ทั้งหมด' : type}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleOpenExportModal}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-100 active:scale-95"
+            >
+              <Download size={16} />
+              <span>ส่งออกข้อมูล</span>
+            </button>
           </div>
         </div>
       </div>
@@ -256,6 +483,165 @@ const Analytics = ({ records: allRecords }) => {
         </div>
 
       </div>
+
+      {/* Export Modal */}
+      {isExportModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-[40px] border border-slate-100 max-w-2xl w-full p-8 md:p-10 shadow-2xl animate-scale-up max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                  <Download size={20} />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-800 text-lg leading-tight">เงื่อนไขการส่งออกข้อมูล</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Export Filters & Options</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsExportModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Date Range Filter */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">ช่วงเวลา (Date Range)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'today', label: 'วันนี้ (Today)' },
+                    { id: '7days', label: '7 วันย้อนหลัง' },
+                    { id: '30days', label: '30 วันย้อนหลัง' },
+                    { id: 'all', label: 'ทั้งหมด (All)' },
+                  ].map(option => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setExportFilters(prev => ({ ...prev, dateRange: option.id }))}
+                      className={`px-4 py-3 rounded-xl border-2 font-bold text-xs transition-all text-center ${
+                        exportFilters.dateRange === option.id
+                          ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                          : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Record Type Filter */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">ประเภทการบันทึก (Record Type)</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'all', label: 'ทั้งหมด' },
+                    { id: 'หลังทำหัตถการ', label: 'หลังทำหัตถการ' },
+                    { id: 'แจ้งยอดทุก 3 วัน', label: 'แจ้งยอดทุก 3 วัน' },
+                  ].map(option => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setExportFilters(prev => ({ ...prev, recordType: option.id }))}
+                      className={`px-3 py-3 rounded-xl border-2 font-bold text-xs transition-all text-center leading-none ${
+                        exportFilters.recordType === option.id
+                          ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                          : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Case Status Filter */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">สถานะเคส (Case Status)</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'all', label: 'ทั้งหมด' },
+                    { id: 'active', label: 'ยังไม่ปิดเคส' },
+                    { id: 'closed', label: 'ปิดเคสแล้ว' },
+                  ].map(option => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setExportFilters(prev => ({ ...prev, caseStatus: option.id }))}
+                      className={`px-3 py-3 rounded-xl border-2 font-bold text-xs transition-all text-center ${
+                        exportFilters.caseStatus === option.id
+                          ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                          : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Balance Threshold Filter */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">ยอดคงเหลือ (Outstanding Balance)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'all', label: 'ทั้งหมด (All)' },
+                    { id: 'gt100k', label: 'มากกว่า 100,000 ฿' },
+                    { id: 'gt500k', label: 'มากกว่า 500,000 ฿' },
+                    { id: 'lt100k', label: 'น้อยกว่า 100,000 ฿' },
+                  ].map(option => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setExportFilters(prev => ({ ...prev, balanceThreshold: option.id }))}
+                      className={`px-4 py-3 rounded-xl border-2 font-bold text-xs transition-all text-center ${
+                        exportFilters.balanceThreshold === option.id
+                          ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                          : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Status summary */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">พบข้อมูลที่ตรงเงื่อนไข</span>
+                <span className="text-sm font-black text-indigo-600">{previewCount.toLocaleString()} รายการ</span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsExportModalOpen(false)}
+                  className="flex-1 px-5 py-4 border-2 border-slate-100 hover:border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-2xl transition-all"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  disabled={previewCount === 0}
+                  onClick={handleExportCSV}
+                  className={`flex-1 px-5 py-4 font-bold text-xs uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                    previewCount === 0
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 active:scale-95'
+                  }`}
+                >
+                  <Download size={14} />
+                  <span>ดาวน์โหลด CSV</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -17,6 +17,7 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
     room: '',
     stayDays: '',
     checkDate: new Date().toISOString().split('T')[0],
+    admitDate: '',
     totalAmount: '',
     deposit: '',
     balance: 0,
@@ -35,11 +36,28 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
     setFormData(prev => ({ ...prev, balance: total - dep }));
   }, [formData.totalAmount, formData.deposit]);
 
+  // Calculate stayDays automatically based on admitDate and checkDate
+  useEffect(() => {
+    if (formData.admitDate && formData.checkDate) {
+      const admit = new Date(formData.admitDate);
+      const check = new Date(formData.checkDate);
+      admit.setHours(0, 0, 0, 0);
+      check.setHours(0, 0, 0, 0);
+      const diffTime = check - admit;
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays >= 0) {
+        setFormData(prev => ({ ...prev, stayDays: diffDays.toString() }));
+      }
+    }
+  }, [formData.admitDate, formData.checkDate]);
+
   const handleResetForm = () => {
     setFormData({
       fullName: '', age: '', hn: '', room: '', stayDays: '',
       totalAmount: '', deposit: '', balance: 0, notifyCount: '1',
       paymentType: '', checkDate: new Date().toISOString().split('T')[0],
+      admitDate: '',
       recordType: 'หลังทำหัตถการ', note: '',
       recordedBy: '',
       isAcknowledged: false
@@ -133,6 +151,7 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
         fullName: existingRecord.fullName, 
         age: existingRecord.age,
         room: existingRecord.room || '',
+        admitDate: existingRecord.admitDate || '',
         notifyCount: (hnRecordsCount + 1).toString(),
         recordType: 'แจ้งยอดทุก 3 วัน'
       }));

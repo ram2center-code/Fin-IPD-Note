@@ -64,9 +64,9 @@ const PatientForm = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* HN Input */}
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-1">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Hospital Number (HN)</label>
               <div className="relative group">
                 <Hash className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDuplicateOpenHN ? 'text-red-500' : 'text-slate-500 group-focus-within:text-indigo-600'}`} size={18} />
@@ -85,7 +85,7 @@ const PatientForm = ({
             </div>
 
             {/* Name Input */}
-            <div className="md:col-span-2 space-y-2">
+            <div className="md:col-span-3 space-y-2">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Full Name (ชื่อ-นามสกุล)</label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-600 transition-colors" size={18} />
@@ -98,19 +98,35 @@ const PatientForm = ({
             </div>
 
             {/* Others */}
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-1">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Age (อายุ)</label>
               <input type="number" name="age" placeholder="ปี" onWheel={(e) => e.target.blur()} className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700 tabular-nums" value={formData.age} onChange={handleInputChange} required />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-1">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Room Number (เลขห้อง)</label>
               <div className="relative group">
                 <BedDouble className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-600 transition-colors" size={18} />
                 <input type="text" name="room" placeholder="เช่น 801" className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700 tabular-nums" value={formData.room} onChange={handleInputChange} required />
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Stay Duration (พักกี่คืน) (Optional)</label>
+            {/* Admit Date Input */}
+            <div className="space-y-2 md:col-span-1">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">วันที่ Admit (dd/mm/yyyy)</label>
+              <div className="relative group">
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-600 transition-colors" size={18} />
+                <input
+                  type="date"
+                  name="admitDate"
+                  lang="en-GB"
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700"
+                  value={formData.admitDate || ''}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2 md:col-span-1">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Stay Duration (พักกี่คืน)</label>
               <input type="number" name="stayDays" placeholder="จำนวนคืน" onWheel={(e) => e.target.blur()} className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-600 focus:bg-white outline-none transition-all font-bold text-slate-700 tabular-nums" value={formData.stayDays} onChange={handleInputChange} />
             </div>
           </div>

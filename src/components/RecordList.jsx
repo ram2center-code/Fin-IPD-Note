@@ -171,6 +171,12 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                       <p className="text-xs font-bold text-slate-500 mt-0.5 uppercase tracking-widest flex flex-wrap gap-x-2 gap-y-1 items-center">
                         <span>อายุ {patientData.age} ปี</span>
                         <span>•</span>
+                        {latestRecord?.admitDate && (
+                          <>
+                            <span>Admit: {formatDateThai(latestRecord.admitDate)}</span>
+                            <span>•</span>
+                          </>
+                        )}
                         <span>{patientData.records.length} ประวัติ</span>
                         {latestRecord && (
                           <>
@@ -269,7 +275,8 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                           <thead>
                             <tr className="bg-slate-50/50 rounded-xl">
                               <th className="px-4 py-4 text-xs font-black text-slate-500 uppercase tracking-widest text-center">จัดการ</th>
-                              <th className="px-4 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">วันที่</th>
+                              <th className="px-4 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">วันที่ Admit</th>
+                              <th className="px-4 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">วันที่เช็คยอด</th>
                               <th className="px-4 py-4 text-xs font-black text-slate-500 uppercase tracking-widest text-center">Room</th>
                               <th className="px-4 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">ประเภท/ชำระ</th>
                               <th className="px-4 py-4 text-xs font-black text-slate-500 uppercase tracking-widest text-right">ยอดทั้งหมด</th>
@@ -303,6 +310,9 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                                       </button>
                                     )}
                                   </div>
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap font-bold text-slate-600 text-sm tabular-nums">
+                                  {record.admitDate ? formatDateThai(record.admitDate) : '-'}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap">
                                   <div className="flex items-center gap-2">
@@ -378,7 +388,10 @@ const RecordList = ({ records, handleEdit, handleDelete, dueRecords, onOpenDetai
                                   />
                                 )}
                                 <div>
-                                  <p className="text-xs font-black text-indigo-600 uppercase tracking-widest">{formatDateThai(record.checkDate)}</p>
+                                  <p className="text-xs font-black text-indigo-600 uppercase tracking-widest">เช็คยอด: {formatDateThai(record.checkDate)}</p>
+                                  {record.admitDate && (
+                                    <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mt-0.5">Admit: {formatDateThai(record.admitDate)}</p>
+                                  )}
                                   <p className="text-sm font-bold text-slate-500 mt-0.5">ห้อง {record.room} | ครั้งที่ {record.notifyCount || 1}</p>
                                 </div>
                               </div>
