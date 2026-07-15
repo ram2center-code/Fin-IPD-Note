@@ -146,10 +146,15 @@ const Analytics = ({ records: allRecords }) => {
       });
       const mergedNotes = noteParts.join(' | ');
 
+      // Find the latest record with a non-zero deposit to get the latest deposit date
+      const recordWithDeposit = [...allPatientRecords].reverse().find(r => (parseFloat(r.deposit) || 0) > 0);
+      const latestDepositDate = recordWithDeposit ? recordWithDeposit.checkDate : '';
+
       // Sort chronologically descending to get the latest record as primary representation
       patientRecords.sort((a, b) => new Date(b.checkDate) - new Date(a.checkDate));
       const latestRecord = { ...patientRecords[0] };
       latestRecord.note = mergedNotes;
+      latestRecord.latestDepositDate = latestDepositDate;
       groupedList.push(latestRecord);
     });
 
@@ -274,11 +279,13 @@ const Analytics = ({ records: allRecords }) => {
         const isSelfPay = r.paymentType === 'ชำระเอง';
         const isInsurance = r.paymentType !== 'ชำระเอง';
 
-        // Format dates as m/d/yyyy
+        // Format dates as dd/mm/yyyy
         const formatDate = (dateStr) => {
           if (!dateStr) return '';
           const d = new Date(dateStr);
-          return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+          const day = String(d.getDate()).padStart(2, '0');
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          return `${day}/${month}/${d.getFullYear()}`;
         };
 
         const row = [
@@ -291,8 +298,8 @@ const Analytics = ({ records: allRecords }) => {
           formatDate(r.admitDate),
           r.stayDays || '',
           r.totalAmount || 0,
+          formatDate(r.latestDepositDate),
           r.deposit || '',
-          '', // ยอดDeposit (leave blank as in print format)
           r.balance || 0,
           `"${(r.note || '').replace(/"/g, '""')}"`
         ];
