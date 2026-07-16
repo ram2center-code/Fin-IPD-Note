@@ -269,7 +269,7 @@ const Analytics = ({ records: allRecords }) => {
     // Define headers matching the print template exactly
     const headers = [
       'ลำดับ', 'ROOM', 'HN', 'ชื่อ-นามสกุล', 'ชำระเอง', 'ประกัน', 
-      'วันที่ Admit', 'จำนวนวันนอน', 'ยอดปัจจุบัน', 'Deposit ล่าสุด', 'ยอดDeposit', 'คงเหลือ', 'หมายเหตุ'
+      'วันที่ Admit', 'จำนวนวันนอน', 'ยอดปัจจุบัน', 'วันที่จ่าย Deposit ล่าสุด', 'ยอดDeposit', 'คงเหลือ', 'หมายเหตุ'
     ];
 
     // Map records to rows
