@@ -150,7 +150,7 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
     const existingRecord = records.find(r => r.hn === hn);
     if (existingRecord) {
       handleResetForm();
-      const hnRecordsCount = records.filter(r => r.hn === hn).length;
+      const hnRecordsCount = records.filter(r => r.hn === hn && !r.isClosed).length;
       setFormData(prev => ({ 
         ...prev, 
         hn: existingRecord.hn, 
