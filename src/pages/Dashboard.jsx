@@ -10,6 +10,7 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
   const [activeTab, setActiveTab] = useState('form');
   const [targetCloseHN, setTargetCloseHN] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     age: '',
@@ -89,6 +90,9 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     const submissionData = {
       ...formData,
       isAcknowledged: false // Always reset on save
@@ -112,6 +116,8 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
       handleResetForm();
     } catch (err) {
       toast.error('ไม่สามารถบันทึกได้: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -199,6 +205,7 @@ const Dashboard = ({ records, setRecords, dueRecords, setSelectedDueRecord, setS
           editingId={editingId}
           handleCancelEdit={handleResetForm}
           handleResetForm={handleResetForm}
+          isSubmitting={isSubmitting}
         />
       ) : (
         <RecordList 

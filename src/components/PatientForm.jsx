@@ -13,7 +13,8 @@ const PatientForm = ({
   editingId, 
   handleCancelEdit,
   handleResetForm,
-  user
+  user,
+  isSubmitting
 }) => {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const paymentRef = useRef(null);
@@ -261,14 +262,14 @@ const PatientForm = ({
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-8">
           <button 
             type="submit" 
-            disabled={isDuplicateOpenHN}
+            disabled={isDuplicateOpenHN || isSubmitting}
             className={`w-full sm:w-auto px-12 py-5 rounded-3xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 group ${
-              isDuplicateOpenHN 
+              (isDuplicateOpenHN || isSubmitting)
                 ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
                 : 'bg-slate-900 text-white hover:bg-black hover:shadow-2xl hover:-translate-y-1 active:scale-95'
             }`}
           >
-            <Save size={20} /> {editingId ? 'บันทึกการแก้ไข' : 'บันทึกรายการใหม่'} <ChevronRight size={18} className={`transition-transform ${!isDuplicateOpenHN && 'group-hover:translate-x-1'}`} />
+            <Save size={20} /> {isSubmitting ? 'กำลังบันทึก...' : (editingId ? 'บันทึกการแก้ไข' : 'บันทึกรายการใหม่')} <ChevronRight size={18} className={`transition-transform ${!(isDuplicateOpenHN || isSubmitting) && 'group-hover:translate-x-1'}`} />
           </button>
           <button type="button" onClick={editingId ? handleCancelEdit : handleResetForm} className="w-full sm:w-auto px-12 py-5 bg-white border-2 border-slate-200 text-slate-500 rounded-3xl font-black text-sm uppercase tracking-widest hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center gap-3">
             {editingId ? <X size={20} /> : <RotateCcw size={20} />} {editingId ? 'ยกเลิกการแก้ไข' : 'ล้างข้อมูลฟอร์ม'}
